@@ -1,7 +1,7 @@
 # Chrome-Simple-Memo
 
 Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
-拡張アイコンをクリックすると、新しいタブでメモ画面（`memo.html`）が開く。
+拡張アイコンをクリックすると、新しいタブでメモ画面（`src/memo.html`）が開く。
 
 ## 技術スタック
 - 言語: JavaScript（ES Modules、ビルドなし。型は JSDoc + `tsc --checkJs`）
