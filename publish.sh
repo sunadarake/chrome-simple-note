@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# release.sh で作った zip を GitHub Release（draft）に投稿する
+# release.sh で作った zip を GitHub Release に公開する
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -30,4 +30,4 @@ notes_file=$(mktemp)
 trap 'rm -f "$notes_file"' EXIT
 sed "s/{{VERSION}}/${version}/g" release-notes.md > "$notes_file"
 
-gh release create "$tag" "$zip_path" --draft --title "$tag" --notes-file "$notes_file"
+gh release create "$tag" "$zip_path" --title "$tag" --notes-file "$notes_file"

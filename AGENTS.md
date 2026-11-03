@@ -17,7 +17,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - 型チェック: `npm run typecheck`
 - 整形: `npm run format`（確認のみは `npx prettier --check .`）
 - ビルド: なし
-- リリース: `./release.sh`（`release/` に配布用 zip を作る）、`./publish.sh`（zip を GitHub Release の draft に投稿する）
+- リリース: `./release.sh`（`release/` に配布用 zip を作る）、`./publish.sh`（zip を GitHub Release に公開する）
 - 動作確認: `chrome://extensions` でデベロッパーモードを有効にし、このディレクトリを「パッケージ化されていない拡張機能を読み込む」で読み込む
 
 ## ディレクトリ構成
