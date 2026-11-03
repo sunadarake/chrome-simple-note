@@ -217,4 +217,40 @@ describe('シークレットメモ', () => {
     expect(sessionStored(storage)).toEqual([]);
     expect(stored(storage)).toHaveLength(1);
   });
+
+  describe('見た目', () => {
+    const isSecretView = () => q('.main-content').classList.contains('secret');
+
+    it('開くとメイン画面が切り替わりラベルが出る', () => {
+      start({ memos: [memo(1, 'a')] });
+      expect(isSecretView()).toBe(false);
+      expect(q('.secret-label').hidden).toBe(true);
+      createSecret();
+      expect(isSecretView()).toBe(true);
+      expect(q('.secret-label').hidden).toBe(false);
+    });
+
+    it('一覧のシークレットメモの項目に secret クラスが付く', () => {
+      start({ memos: [memo(1, 'a')] });
+      createSecret();
+      expect(items()[0].classList.contains('secret')).toBe(true);
+      expect(items()[1].classList.contains('secret')).toBe(false);
+    });
+
+    it('通常メモに切り替えると元に戻る', () => {
+      start({ memos: [memo(1, 'a')] });
+      createSecret();
+      items()[1].click();
+      expect(isSecretView()).toBe(false);
+      expect(q('.secret-label').hidden).toBe(true);
+    });
+
+    it('シークレットメモを削除して通常メモが開くと元に戻る', () => {
+      start({ memos: [memo(1, 'a')] });
+      createSecret();
+      q('.delete-btn').click();
+      expect(isSecretView()).toBe(false);
+      expect(q('.secret-label').hidden).toBe(true);
+    });
+  });
 });

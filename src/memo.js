@@ -29,6 +29,8 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
   const secretMemoBtn = query('.secret-memo-btn');
   const searchInput = /** @type {HTMLInputElement} */ (query('.search-input'));
   const memoList = query('.memo-list');
+  const mainContent = query('.main-content');
+  const secretLabel = /** @type {HTMLElement} */ (query('.secret-label'));
   const titleDisplay = query('.title-display');
   const contentInput = /** @type {HTMLTextAreaElement} */ (
     query('.content-input')
@@ -55,6 +57,9 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
       if (memo.id === currentId) {
         memoItem.classList.add('active');
       }
+      if (memo.secret) {
+        memoItem.classList.add('secret');
+      }
       memoItem.textContent =
         (memo.secret ? '🔒 ' : '') + (memo.title || '無題のメモ');
       memoItem.addEventListener('click', () => loadMemo(memo.id));
@@ -67,6 +72,8 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
     const memo = memos.find((m) => m.id === id);
     if (!memo) return;
     currentId = id;
+    mainContent.classList.toggle('secret', Boolean(memo.secret));
+    secretLabel.hidden = !memo.secret;
     contentInput.value = memo.content;
     updateTitleDisplay(memo.content);
     lastContent = memo.content;
