@@ -17,6 +17,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - 型チェック: `npm run typecheck`
 - 整形: `npm run format`（確認のみは `npx prettier --check .`）
 - ビルド: なし
+- リリース: `./release.sh`（`release/` に配布用 zip を作る）、`./publish.sh`（zip を GitHub Release の draft に投稿する）
 - 動作確認: `chrome://extensions` でデベロッパーモードを有効にし、このディレクトリを「パッケージ化されていない拡張機能を読み込む」で読み込む
 
 ## ディレクトリ構成
@@ -29,6 +30,8 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - `src/storage.js` `localStorage` への読み書き
 - `src/*.test.js` テスト（`tsc` の対象外）
 - `icons/` 拡張機能のアイコン
+- `release-notes.md` Release Note のテンプレート（`{{VERSION}}` は `publish.sh` が置き換える）
+- `release/` `release.sh` の出力先（git 管理外）
 - `todo/` 実装計画（`/todo-plan` で作成、`/todo-refine` で詰める、`NNN-todo.md` 形式）
 
 ## 仕様・注意点
@@ -36,6 +39,8 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - メモのタイトルは保存後の本文の先頭20文字
 - メモの選択は `id` で管理する（配列のインデックスに依存しない）
 - 入力が1秒止まると自動保存する（空白のみの内容は保存しない）
+- バージョンは `manifest.json` の `version` で決まる。リリース前に手で更新する（zip 名とタグ `v<version>` に使われる）
+- `publish.sh` は未コミットの変更・未 push のコミット・同じタグの Release があると止まる
 
 ## 作業の進め方
 - 作業の前に、関連するコードと仕様を読んで理解する
