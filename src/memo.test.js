@@ -30,7 +30,12 @@ const memo = (id, content) => ({
   createdAt: '2026-01-01T00:00:00.000Z',
 });
 
-const start = ({ memos, confirm = () => true, copy = () => {} } = {}) => {
+const start = ({
+  memos,
+  confirm = () => true,
+  copy = () => {},
+  download = () => {},
+} = {}) => {
   const storage = fakeStorage(memos);
   const session = fakeStorage();
   initMemoApp({
@@ -39,6 +44,7 @@ const start = ({ memos, confirm = () => true, copy = () => {} } = {}) => {
     sessionStorage: session,
     confirm,
     copy,
+    download,
   });
   return { ...storage, session };
 };
@@ -273,5 +279,105 @@ describe('マークダウンのハイライト', () => {
     start({ memos: [memo(2, '# a'), memo(1, '> b')] });
     items()[1].click();
     expect(layer().innerHTML).toBe('<span class="md-quote">&gt; b</span>');
+  });
+});
+
+describe('エクスポート', () => {
+  it('通常メモを渡された順のままファイルとして書き出す', () => {
+    const download = vi.fn();
+    start({ memos: [memo(2, 'b'), memo(1, 'a')], download });
+    q('.export-btn').click();
+    const [filename, text] = download.mock.calls[0];
+    expect(filename).toMatch(/^simple-note-\d{14}\.json$/);
+    expect(JSON.parse(text).memos.map((m) => m.id)).toEqual([2, 1]);
+    expect(q('.log-message').textContent).toBe('2件をエクスポートしました');
+  });
+
+  it('シークレットメモは書き出さない', () => {
+    const download = vi.fn();
+    start({ memos: [memo(1, 'a')], download });
+    q('.secret-memo-btn').click();
+    q('.export-btn').click();
+    expect(JSON.parse(download.mock.calls[0][1]).memos).toHaveLength(1);
+  });
+
+  it('通常メモがなければ書き出さずにメッセージを出す', () => {
+    const download = vi.fn();
+    start({ memos: [memo(1, 'a')], download });
+    q('.secret-memo-btn').click();
+    items()[1].click();
+    q('.delete-btn').click();
+    q('.export-btn').click();
+    expect(download).not.toHaveBeenCalled();
+    expect(q('.log-message').textContent).toBe(
+      'エクスポートするメモがありません',
+    );
+  });
+});
+
+describe('インポート', () => {
+  const importFile = async (text) => {
+    const input = q('.import-input');
+    Object.defineProperty(input, 'files', {
+      value: [{ text: () => Promise.resolve(text) }],
+      configurable: true,
+    });
+    input.dispatchEvent(new Event('change'));
+    await vi.advanceTimersByTimeAsync(0);
+  };
+  const file = (memos) => JSON.stringify({ version: 1, memos });
+
+  it('メモを追加して保存し、id の降順に並べる', async () => {
+    const storage = start({ memos: [memo(2, 'b')] });
+    await importFile(file([memo(3, 'c'), memo(1, 'a')]));
+    expect(stored(storage).map((m) => m.id)).toEqual([3, 2, 1]);
+    expect(items().map((i) => i.textContent)).toEqual(['c', 'b', 'a']);
+    expect(q('.log-message').textContent).toBe(
+      '2件をインポートしました（0件は同じIDのためスキップ）',
+    );
+  });
+
+  it('同じ id はスキップし、今ある内容は変えない', async () => {
+    const storage = start({ memos: [memo(1, 'mine')] });
+    await importFile(file([memo(1, 'other')]));
+    expect(stored(storage)[0].content).toBe('mine');
+    expect(q('.log-message').textContent).toBe(
+      '0件をインポートしました（1件は同じIDのためスキップ）',
+    );
+  });
+
+  it('選択中のメモは変わらない', async () => {
+    start({ memos: [memo(2, 'b')] });
+    q('.content-input').value = 'editing';
+    await importFile(file([memo(3, 'c')]));
+    expect(q('.content-input').value).toBe('editing');
+    expect(
+      items().find((i) => i.classList.contains('active')).textContent,
+    ).toBe('b');
+  });
+
+  it('不正なファイルではメッセージを出し、メモは変えない', async () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    await importFile('not json');
+    expect(stored(storage)).toHaveLength(1);
+    expect(q('.log-message').textContent).toBe(
+      'JSON として読み込めませんでした',
+    );
+  });
+
+  it('終わると選択を空に戻し、同じファイルをもう一度選べる', async () => {
+    start({ memos: [memo(1, 'a')] });
+    await importFile(file([]));
+    expect(q('.import-input').value).toBe('');
+  });
+
+  it('「インポート」ボタンでファイル選択を開く', () => {
+    start();
+    let opened = false;
+    q('.import-input').click = () => {
+      opened = true;
+    };
+    q('.import-btn').click();
+    expect(opened).toBe(true);
   });
 });

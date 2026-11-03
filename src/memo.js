@@ -1,4 +1,5 @@
 import { highlightMarkdown } from './markdown-highlight.js';
+import { exportMemos, mergeMemos, parseImport } from './memo-transfer.js';
 import {
   createMemo,
   filterMemos,
@@ -18,8 +19,16 @@ const LOG_DISPLAY_MS = 3000;
  * @param {Pick<Storage, 'getItem' | 'setItem'>} deps.sessionStorage シークレットメモの保存先
  * @param {(message: string) => boolean} deps.confirm
  * @param {() => void} deps.copy 選択中のテキストをクリップボードにコピーする
+ * @param {(filename: string, text: string) => void} deps.download テキストをファイルとして保存する
  */
-export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
+export function initMemoApp({
+  root,
+  storage,
+  sessionStorage,
+  confirm,
+  copy,
+  download,
+}) {
   /** @param {string} selector */
   const query = (selector) => {
     const element = root.querySelector(selector);
@@ -41,6 +50,9 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
   const saveBtn = query('.save-btn');
   const deleteBtn = query('.delete-btn');
   const logMessage = query('.log-message');
+  const exportBtn = query('.export-btn');
+  const importBtn = query('.import-btn');
+  const importInput = /** @type {HTMLInputElement} */ (query('.import-input'));
 
   let memos = loadMemos(storage, sessionStorage);
   /** @type {number | null} */
@@ -167,6 +179,37 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
     showLogMessage('コンテンツをコピーしました');
   }
 
+  function exportToFile() {
+    const count = memos.filter((memo) => !memo.secret).length;
+    if (count === 0) {
+      showLogMessage('エクスポートするメモがありません');
+      return;
+    }
+    const now = new Date();
+    const stamp = now.toISOString().slice(0, 19).replace(/\D/g, '');
+    download(`simple-note-${stamp}.json`, exportMemos(memos, now));
+    showLogMessage(`${count}件をエクスポートしました`);
+  }
+
+  async function importFromFile() {
+    const file = importInput.files?.[0];
+    if (!file) return;
+    try {
+      const result = mergeMemos(memos, parseImport(await file.text()));
+      memos = result.memos;
+      saveMemos(storage, sessionStorage, memos);
+      renderMemoList();
+      showLogMessage(
+        `${result.added}件をインポートしました（${result.skipped}件は同じIDのためスキップ）`,
+      );
+    } catch (error) {
+      showLogMessage(/** @type {Error} */ (error).message);
+    } finally {
+      // 同じファイルをもう一度選んでも change が起きるようにする
+      importInput.value = '';
+    }
+  }
+
   newMemoBtn.addEventListener('click', () => createNewMemo(false));
   secretMemoBtn.addEventListener('click', () => createNewMemo(true));
   searchInput.addEventListener('input', renderMemoList);
@@ -177,6 +220,9 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
   copyBtn.addEventListener('click', copyContent);
   saveBtn.addEventListener('click', saveMemo);
   deleteBtn.addEventListener('click', deleteMemo);
+  exportBtn.addEventListener('click', exportToFile);
+  importBtn.addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', importFromFile);
 
   if (memos.length > 0) {
     loadMemo(memos[0].id);
