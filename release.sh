@@ -8,7 +8,8 @@ version=$(jq -r .version manifest.json)
 zip_path="release/chrome-simple-note-${version}.zip"
 
 mkdir -p release
-rm -f "$zip_path"
+# 前のバージョンの zip が残らないよう、作る前に消す
+rm -f release/*.zip
 # テストファイルは拡張機能の実行に不要なので含めない
 zip -r "$zip_path" manifest.json icons src -x '*.test.js'
 
