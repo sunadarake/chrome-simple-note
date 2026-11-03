@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chrome-Simple-Memo",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "description": "シンプルなマークダウンメモ帳",
   "permissions": ["tabs"],
   "action": {
