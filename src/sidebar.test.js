@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { initSidebarResize } from './sidebar.js';
+import { initSidebarResize, initSidebarToggle } from './sidebar.js';
 
 const html = readFileSync('src/memo.html', 'utf-8');
 const body = html.match(/<body>([\s\S]*)<\/body>/)[1];
@@ -102,5 +102,55 @@ describe('ドラッグ', () => {
     mouse(document, 'mouseup');
     expect(document.body.style.userSelect).toBe('');
     expect(document.body.style.cursor).toBe('');
+  });
+});
+
+describe('開閉', () => {
+  const startToggle = (collapsed) => {
+    const storage = fakeStorage();
+    if (collapsed !== undefined) storage.data.sidebarCollapsed = collapsed;
+    initSidebarToggle({ root: document, storage });
+    return storage;
+  };
+  const isCollapsed = () =>
+    q('.container').classList.contains('sidebar-collapsed');
+  const expanded = () => q('.sidebar-toggle').getAttribute('aria-expanded');
+
+  it('保存がなければ開いた状態で始まる', () => {
+    startToggle();
+    expect(isCollapsed()).toBe(false);
+    expect(expanded()).toBe('true');
+  });
+
+  it('保存が true なら閉じた状態で始まる', () => {
+    startToggle('true');
+    expect(isCollapsed()).toBe(true);
+    expect(expanded()).toBe('false');
+  });
+
+  it('ボタンで閉じる・開くが切り替わる', () => {
+    startToggle();
+    q('.sidebar-toggle').click();
+    expect(isCollapsed()).toBe(true);
+    expect(expanded()).toBe('false');
+    q('.sidebar-toggle').click();
+    expect(isCollapsed()).toBe(false);
+    expect(expanded()).toBe('true');
+  });
+
+  it('切り替えるたびに状態を保存する', () => {
+    const storage = startToggle();
+    q('.sidebar-toggle').click();
+    expect(storage.data.sidebarCollapsed).toBe('true');
+    q('.sidebar-toggle').click();
+    expect(storage.data.sidebarCollapsed).toBe('false');
+  });
+
+  it('閉じても保存した幅は変わらない', () => {
+    const storage = start('350');
+    initSidebarToggle({ root: document, storage });
+    q('.sidebar-toggle').click();
+    expect(widthOf()).toBe('350px');
+    expect(storage.data.sidebarWidth).toBe('350');
   });
 });

@@ -1,5 +1,5 @@
 import { initMemoApp } from './memo.js';
-import { initSidebarResize } from './sidebar.js';
+import { initSidebarResize, initSidebarToggle } from './sidebar.js';
 
 initMemoApp({
   root: document,
@@ -20,3 +20,4 @@ initMemoApp({
 });
 
 initSidebarResize({ root: document, storage: localStorage });
+initSidebarToggle({ root: document, storage: localStorage });
