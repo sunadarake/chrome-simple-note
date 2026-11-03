@@ -254,3 +254,24 @@ describe('シークレットメモ', () => {
     });
   });
 });
+
+describe('マークダウンのハイライト', () => {
+  const layer = () => q('.editor-highlight');
+
+  it('メモを開くと本文がハイライトされて表示層に入る', () => {
+    start({ memos: [memo(1, '# 見出し')] });
+    expect(layer().innerHTML).toBe('<span class="md-heading"># 見出し</span>');
+  });
+
+  it('入力すると表示層が更新される', () => {
+    start({ memos: [memo(1, 'a')] });
+    typeContent('**太字**');
+    expect(layer().innerHTML).toBe('<span class="md-bold">**太字**</span>');
+  });
+
+  it('メモを切り替えると表示層も切り替わる', () => {
+    start({ memos: [memo(2, '# a'), memo(1, '> b')] });
+    items()[1].click();
+    expect(layer().innerHTML).toBe('<span class="md-quote">&gt; b</span>');
+  });
+});

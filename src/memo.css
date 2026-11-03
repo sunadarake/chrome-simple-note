@@ -178,23 +178,102 @@ body {
   min-height: 40px;
 }
 
-.content-input {
+.editor {
+  position: relative;
   flex: 1;
-  padding: 20px;
+  min-height: 0;
+  margin-bottom: 25px;
   border: 1px solid #e1e8ed;
   border-radius: 8px;
-  resize: none;
-  outline: none;
-  font-size: 16px;
-  line-height: 1.6;
-  margin-bottom: 25px;
+  background: white;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: border-color 0.3s ease;
 }
 
-.content-input:focus {
+.editor:focus-within {
   border-color: #3498db;
   box-shadow: inset 0 1px 3px rgba(52, 152, 219, 0.1);
+}
+
+/* 色付きの表示層と textarea は、文字の位置が 1px もずれないよう同じ指定にする */
+.editor-highlight,
+.content-input {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 20px;
+  border: 0;
+  border-radius: 7px;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.editor-highlight {
+  color: #333;
+  pointer-events: none;
+}
+
+.content-input {
+  resize: none;
+  outline: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #333;
+}
+
+.content-input::placeholder {
+  color: #999;
+}
+
+/* 選択範囲が背面の色付き文字を隠さないよう、半透明にする */
+.content-input::selection {
+  background: rgba(52, 152, 219, 0.3);
+  color: transparent;
+}
+
+.md-heading {
+  color: #1565c0;
+}
+
+.md-quote {
+  color: #6a737d;
+}
+
+.md-list {
+  color: #e67e22;
+}
+
+.md-hr {
+  color: #95a5a6;
+}
+
+.md-code {
+  color: #c0392b;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.md-codeblock {
+  color: #8e44ad;
+}
+
+.md-bold {
+  color: #d35400;
+}
+
+.md-italic {
+  color: #16a085;
+}
+
+.md-link {
+  color: #2980b9;
+  text-decoration: underline;
 }
 
 /* シークレットメモを開いている間のスタイル */
@@ -222,15 +301,60 @@ body {
   border-bottom-color: #4a4d52;
 }
 
-.main-content.secret .content-input {
+.main-content.secret .editor {
   background: #1e1f22;
-  color: #e8eaed;
   border-color: #4a4d52;
 }
 
-.main-content.secret .content-input:focus {
+.main-content.secret .editor:focus-within {
   border-color: #95a5a6;
   box-shadow: inset 0 1px 3px rgba(149, 165, 166, 0.2);
+}
+
+.main-content.secret .editor-highlight {
+  color: #e8eaed;
+}
+
+.main-content.secret .content-input {
+  caret-color: #e8eaed;
+}
+
+.main-content.secret .content-input::placeholder {
+  color: #888;
+}
+
+.main-content.secret .md-heading,
+.main-content.secret .md-link {
+  color: #8ab4f8;
+}
+
+.main-content.secret .md-quote {
+  color: #9aa0a6;
+}
+
+.main-content.secret .md-list {
+  color: #fdd663;
+}
+
+.main-content.secret .md-hr {
+  color: #7f8c8d;
+}
+
+.main-content.secret .md-code {
+  color: #f28b82;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.main-content.secret .md-codeblock {
+  color: #c58af9;
+}
+
+.main-content.secret .md-bold {
+  color: #f9a875;
+}
+
+.main-content.secret .md-italic {
+  color: #81c995;
 }
 
 .main-content.secret .footer {

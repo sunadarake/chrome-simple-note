@@ -1,3 +1,4 @@
+import { highlightMarkdown } from './markdown-highlight.js';
 import {
   createMemo,
   filterMemos,
@@ -35,6 +36,7 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
   const contentInput = /** @type {HTMLTextAreaElement} */ (
     query('.content-input')
   );
+  const highlightLayer = query('.editor-highlight');
   const copyBtn = query('.copy-btn');
   const saveBtn = query('.save-btn');
   const deleteBtn = query('.delete-btn');
@@ -75,9 +77,15 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
     mainContent.classList.toggle('secret', Boolean(memo.secret));
     secretLabel.hidden = !memo.secret;
     contentInput.value = memo.content;
+    updateHighlight();
     updateTitleDisplay(memo.content);
     lastContent = memo.content;
     renderMemoList();
+  }
+
+  function updateHighlight() {
+    highlightLayer.innerHTML = highlightMarkdown(contentInput.value);
+    highlightLayer.scrollTop = contentInput.scrollTop;
   }
 
   /** @param {string} content */
@@ -137,6 +145,7 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
   }
 
   function handleContentInput() {
+    updateHighlight();
     updateTitleDisplay(contentInput.value);
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
@@ -162,6 +171,9 @@ export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
   secretMemoBtn.addEventListener('click', () => createNewMemo(true));
   searchInput.addEventListener('input', renderMemoList);
   contentInput.addEventListener('input', handleContentInput);
+  contentInput.addEventListener('scroll', () => {
+    highlightLayer.scrollTop = contentInput.scrollTop;
+  });
   copyBtn.addEventListener('click', copyContent);
   saveBtn.addEventListener('click', saveMemo);
   deleteBtn.addEventListener('click', deleteMemo);
