@@ -32,8 +32,15 @@ const memo = (id, content) => ({
 
 const start = ({ memos, confirm = () => true, copy = () => {} } = {}) => {
   const storage = fakeStorage(memos);
-  initMemoApp({ root: document, storage, confirm, copy });
-  return storage;
+  const session = fakeStorage();
+  initMemoApp({
+    root: document,
+    storage,
+    sessionStorage: session,
+    confirm,
+    copy,
+  });
+  return { ...storage, session };
 };
 
 beforeEach(() => {
@@ -54,7 +61,7 @@ describe('初期表示', () => {
   });
 
   it('メモがあれば先頭のメモを表示する', () => {
-    start({ memos: [memo(1, 'first'), memo(2, 'second')] });
+    start({ memos: [memo(2, 'first'), memo(1, 'second')] });
     expect(q('.content-input').value).toBe('first');
     expect(items()[0].classList.contains('active')).toBe(true);
   });
@@ -101,7 +108,7 @@ describe('保存', () => {
 describe('削除', () => {
   it('確認でキャンセルしたら削除しない', () => {
     const storage = start({
-      memos: [memo(1, 'a'), memo(2, 'b')],
+      memos: [memo(2, 'a'), memo(1, 'b')],
       confirm: () => false,
     });
     q('.delete-btn').click();
@@ -110,10 +117,10 @@ describe('削除', () => {
 
   it('確認で承諾したら削除して先頭のメモを表示する', () => {
     const confirm = vi.fn(() => true);
-    const storage = start({ memos: [memo(1, 'a'), memo(2, 'b')], confirm });
+    const storage = start({ memos: [memo(2, 'a'), memo(1, 'b')], confirm });
     q('.delete-btn').click();
     expect(confirm).toHaveBeenCalledWith('"a" を削除します。よろしいですか？');
-    expect(stored(storage).map((m) => m.id)).toEqual([2]);
+    expect(stored(storage).map((m) => m.id)).toEqual([1]);
     expect(q('.content-input').value).toBe('b');
   });
 
@@ -134,7 +141,7 @@ describe('一覧と検索', () => {
   });
 
   it('一覧のメモをクリックするとそのメモを表示する', () => {
-    start({ memos: [memo(1, 'a'), memo(2, 'b')] });
+    start({ memos: [memo(2, 'a'), memo(1, 'b')] });
     items()[1].click();
     expect(q('.content-input').value).toBe('b');
   });
@@ -162,5 +169,52 @@ describe('コピー', () => {
     q('.copy-btn').click();
     expect(copy).toHaveBeenCalledOnce();
     expect(q('.log-message').textContent).toBe('コンテンツをコピーしました');
+  });
+});
+
+describe('シークレットメモ', () => {
+  const sessionStored = (storage) => JSON.parse(storage.session.data.memos);
+  const createSecret = () => q('.secret-memo-btn').click();
+
+  it('ボタンで作ると sessionStorage にだけ保存され、一覧に鍵付きで出る', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    createSecret();
+    expect(sessionStored(storage)).toHaveLength(1);
+    expect(sessionStored(storage)[0].secret).toBe(true);
+    expect(stored(storage).every((m) => !m.secret)).toBe(true);
+    expect(items()[0].textContent).toBe('🔒 無題のメモ');
+    expect(items()[0].classList.contains('active')).toBe(true);
+    expect(items()[1].textContent).toBe('a');
+  });
+
+  it('保存と自動保存は sessionStorage にだけ書く', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    createSecret();
+    typeContent('secret text');
+    vi.advanceTimersByTime(1000);
+    expect(sessionStored(storage)[0].content).toBe('secret text');
+    q('.content-input').value = 'saved text';
+    q('.save-btn').click();
+    expect(sessionStored(storage)[0].content).toBe('saved text');
+    expect(JSON.stringify(stored(storage))).not.toContain('text');
+    expect(items()[0].textContent).toBe('🔒 saved text');
+  });
+
+  it('検索の対象に含まれる', () => {
+    start({ memos: [memo(1, 'apple')] });
+    createSecret();
+    typeContent('banana');
+    q('.save-btn').click();
+    q('.search-input').value = 'ban';
+    q('.search-input').dispatchEvent(new Event('input'));
+    expect(items().map((i) => i.textContent)).toEqual(['🔒 banana']);
+  });
+
+  it('削除すると sessionStorage から消える', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    createSecret();
+    q('.delete-btn').click();
+    expect(sessionStored(storage)).toEqual([]);
+    expect(stored(storage)).toHaveLength(1);
   });
 });

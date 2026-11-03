@@ -13,11 +13,12 @@ const LOG_DISPLAY_MS = 3000;
 /**
  * @param {object} deps
  * @param {ParentNode} deps.root
- * @param {Pick<Storage, 'getItem' | 'setItem'>} deps.storage
+ * @param {Pick<Storage, 'getItem' | 'setItem'>} deps.storage 通常メモの保存先
+ * @param {Pick<Storage, 'getItem' | 'setItem'>} deps.sessionStorage シークレットメモの保存先
  * @param {(message: string) => boolean} deps.confirm
  * @param {() => void} deps.copy 選択中のテキストをクリップボードにコピーする
  */
-export function initMemoApp({ root, storage, confirm, copy }) {
+export function initMemoApp({ root, storage, sessionStorage, confirm, copy }) {
   /** @param {string} selector */
   const query = (selector) => {
     const element = root.querySelector(selector);
@@ -25,6 +26,7 @@ export function initMemoApp({ root, storage, confirm, copy }) {
     return element;
   };
   const newMemoBtn = query('.new-memo-btn');
+  const secretMemoBtn = query('.secret-memo-btn');
   const searchInput = /** @type {HTMLInputElement} */ (query('.search-input'));
   const memoList = query('.memo-list');
   const titleDisplay = query('.title-display');
@@ -36,7 +38,7 @@ export function initMemoApp({ root, storage, confirm, copy }) {
   const deleteBtn = query('.delete-btn');
   const logMessage = query('.log-message');
 
-  let memos = loadMemos(storage);
+  let memos = loadMemos(storage, sessionStorage);
   /** @type {number | null} */
   let currentId = null;
   let lastContent = '';
@@ -53,7 +55,8 @@ export function initMemoApp({ root, storage, confirm, copy }) {
       if (memo.id === currentId) {
         memoItem.classList.add('active');
       }
-      memoItem.textContent = memo.title || '無題のメモ';
+      memoItem.textContent =
+        (memo.secret ? '🔒 ' : '') + (memo.title || '無題のメモ');
       memoItem.addEventListener('click', () => loadMemo(memo.id));
       memoList.appendChild(memoItem);
     }
@@ -85,17 +88,18 @@ export function initMemoApp({ root, storage, confirm, copy }) {
     }, LOG_DISPLAY_MS);
   }
 
-  function createNewMemo() {
-    const newMemo = createMemo();
+  /** @param {boolean} secret */
+  function createNewMemo(secret) {
+    const newMemo = createMemo(new Date(), secret);
     memos = [newMemo, ...memos];
-    saveMemos(storage, memos);
+    saveMemos(storage, sessionStorage, memos);
     loadMemo(newMemo.id);
   }
 
   function persistCurrentContent() {
     if (currentId === null) return;
     memos = updateContent(memos, currentId, contentInput.value);
-    saveMemos(storage, memos);
+    saveMemos(storage, sessionStorage, memos);
     renderMemoList();
     lastContent = contentInput.value;
   }
@@ -115,12 +119,12 @@ export function initMemoApp({ root, storage, confirm, copy }) {
       return;
     }
     memos = removeMemo(memos, memo.id);
-    saveMemos(storage, memos);
+    saveMemos(storage, sessionStorage, memos);
     currentId = null;
     if (memos.length > 0) {
       loadMemo(memos[0].id);
     } else {
-      createNewMemo();
+      createNewMemo(false);
     }
     showLogMessage('メモを削除しました');
   }
@@ -147,7 +151,8 @@ export function initMemoApp({ root, storage, confirm, copy }) {
     showLogMessage('コンテンツをコピーしました');
   }
 
-  newMemoBtn.addEventListener('click', createNewMemo);
+  newMemoBtn.addEventListener('click', () => createNewMemo(false));
+  secretMemoBtn.addEventListener('click', () => createNewMemo(true));
   searchInput.addEventListener('input', renderMemoList);
   contentInput.addEventListener('input', handleContentInput);
   copyBtn.addEventListener('click', copyContent);
@@ -157,6 +162,6 @@ export function initMemoApp({ root, storage, confirm, copy }) {
   if (memos.length > 0) {
     loadMemo(memos[0].id);
   } else {
-    createNewMemo();
+    createNewMemo(false);
   }
 }

@@ -4,6 +4,7 @@
  * @property {string} title
  * @property {string} content
  * @property {string} createdAt
+ * @property {boolean} [secret] シークレットメモ。タブを閉じると消える
  */
 
 const TITLE_LENGTH = 20;
@@ -18,14 +19,16 @@ export function titleOf(content) {
 
 /**
  * @param {Date} [now]
+ * @param {boolean} [secret]
  * @returns {Memo}
  */
-export function createMemo(now = new Date()) {
+export function createMemo(now = new Date(), secret = false) {
   return {
     id: now.getTime(),
     title: '',
     content: '',
     createdAt: now.toISOString(),
+    secret,
   };
 }
 

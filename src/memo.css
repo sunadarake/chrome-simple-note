@@ -42,7 +42,8 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.new-memo-btn {
+.new-memo-btn,
+.secret-memo-btn {
   width: 100%;
   padding: 8px;
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
@@ -58,10 +59,23 @@ body {
   transition: all 0.3s ease;
 }
 
-.new-memo-btn:hover {
+.new-memo-btn:hover,
+.secret-memo-btn:hover {
   background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.new-memo-btn {
+  margin-bottom: 10px;
+}
+
+.secret-memo-btn {
+  background: linear-gradient(135deg, #7f8c8d 0%, #566573 100%);
+}
+
+.secret-memo-btn:hover {
+  background: linear-gradient(135deg, #566573 0%, #7f8c8d 100%);
 }
 
 .search-input {

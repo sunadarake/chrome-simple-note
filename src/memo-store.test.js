@@ -32,7 +32,12 @@ describe('createMemo', () => {
       title: '',
       content: '',
       createdAt: '2026-01-02T03:04:05.000Z',
+      secret: false,
     });
+  });
+
+  it('secret を指定するとシークレットメモになる', () => {
+    expect(createMemo(new Date(), true).secret).toBe(true);
   });
 });
 

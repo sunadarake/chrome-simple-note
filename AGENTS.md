@@ -24,10 +24,10 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - `manifest.json` 拡張機能の定義（ルートに置く）
 - `src/background.js` アイコンクリックで `src/memo.html` をタブで開く
 - `src/memo.html` / `src/memo.css` メモ画面
-- `src/main.js` メモ画面のエントリポイント（実際の `document` / `localStorage` を渡して起動する）
+- `src/main.js` メモ画面のエントリポイント（実際の `document` / `localStorage` / `sessionStorage` を渡して起動する）
 - `src/memo.js` UI層。DOM・storage・confirm・コピー処理を引数で受け取る
 - `src/memo-store.js` メモの作成・更新・削除・検索を行う純粋関数
-- `src/storage.js` `localStorage` への読み書き
+- `src/storage.js` `localStorage`（通常メモ）と `sessionStorage`（シークレットメモ）への読み書き
 - `src/*.test.js` テスト（`tsc` の対象外）
 - `icons/` 拡張機能のアイコン
 - `release-notes.md` Release Note のテンプレート（`{{VERSION}}` は `publish.sh` が置き換える）
@@ -36,6 +36,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 
 ## 仕様・注意点
 - メモは `localStorage` の `memos` キーに JSON 配列で保存する（`chrome.storage` は使っていない）
+- シークレットメモ（`secret: true`）は `sessionStorage` の `memos` キーにだけ保存し、`localStorage` には書かない。メモ画面のタブを閉じると消える（リロードでは残る）
 - メモのタイトルは保存後の本文の先頭20文字
 - メモの選択は `id` で管理する（配列のインデックスに依存しない）
 - 入力が1秒止まると自動保存する（空白のみの内容は保存しない）
