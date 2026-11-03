@@ -4,24 +4,37 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 拡張アイコンをクリックすると、新しいタブでメモ画面（`memo.html`）が開く。
 
 ## 技術スタック
-- 言語: JavaScript（ビルド不要、フレームワークなし）
+- 言語: JavaScript（ES Modules、ビルドなし。型は JSDoc + `tsc --checkJs`）
 - 実行環境: Chrome拡張機能（Manifest V3）
-- パッケージ管理: なし
+- テスト: Vitest（jsdom）
+- 静的解析・整形: ESLint、Prettier
+- パッケージ管理: npm
 
 ## コマンド
-- セットアップ・テスト・lint・型チェック・ビルド: なし（未導入）
+- セットアップ: `npm install`
+- テスト: `npm test`
+- lint: `npm run lint`
+- 型チェック: `npm run typecheck`
+- 整形: `npm run format`（確認のみは `npx prettier --check .`）
+- ビルド: なし
 - 動作確認: `chrome://extensions` でデベロッパーモードを有効にし、このディレクトリを「パッケージ化されていない拡張機能を読み込む」で読み込む
 
 ## ディレクトリ構成
-- `manifest.json` 拡張機能の定義
-- `background.js` アイコンクリックで `memo.html` をタブで開く
-- `memo.html` / `memo.css` / `memo.js` メモ画面（一覧・検索・編集・自動保存・コピー・削除）
+- `manifest.json` 拡張機能の定義（ルートに置く）
+- `src/background.js` アイコンクリックで `src/memo.html` をタブで開く
+- `src/memo.html` / `src/memo.css` メモ画面
+- `src/main.js` メモ画面のエントリポイント（実際の `document` / `localStorage` を渡して起動する）
+- `src/memo.js` UI層。DOM・storage・confirm・コピー処理を引数で受け取る
+- `src/memo-store.js` メモの作成・更新・削除・検索を行う純粋関数
+- `src/storage.js` `localStorage` への読み書き
+- `src/*.test.js` テスト（`tsc` の対象外）
 - `icons/` 拡張機能のアイコン
 - `todo/` 実装計画（`/todo-plan` で作成、`/todo-refine` で詰める、`NNN-todo.md` 形式）
 
 ## 仕様・注意点
 - メモは `localStorage` の `memos` キーに JSON 配列で保存する（`chrome.storage` は使っていない）
-- メモのタイトルは本文の先頭20文字
+- メモのタイトルは保存後の本文の先頭20文字
+- メモの選択は `id` で管理する（配列のインデックスに依存しない）
 - 入力が1秒止まると自動保存する（空白のみの内容は保存しない）
 
 ## 作業の進め方

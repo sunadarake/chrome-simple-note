@@ -180,7 +180,9 @@ body {
   opacity: 1;
 }
 
-.copy-btn, .save-btn, .delete-btn {
+.copy-btn,
+.save-btn,
+.delete-btn {
   padding: 10px 20px;
   margin-left: 10px;
   border: none;

@@ -1,0 +1,166 @@
+import { readFileSync } from 'node:fs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { initMemoApp } from './memo.js';
+
+const html = readFileSync('src/memo.html', 'utf-8');
+const body = html.match(/<body>([\s\S]*)<\/body>/)[1];
+
+const fakeStorage = (memos) => {
+  const data = memos ? { memos: JSON.stringify(memos) } : {};
+  return {
+    data,
+    getItem: (key) => data[key] ?? null,
+    setItem: (key, value) => {
+      data[key] = value;
+    },
+  };
+};
+
+const stored = (storage) => JSON.parse(storage.data.memos);
+const q = (selector) => document.querySelector(selector);
+const items = () => [...document.querySelectorAll('.memo-item')];
+const typeContent = (value) => {
+  q('.content-input').value = value;
+  q('.content-input').dispatchEvent(new Event('input'));
+};
+const memo = (id, content) => ({
+  id,
+  title: content.substring(0, 20),
+  content,
+  createdAt: '2026-01-01T00:00:00.000Z',
+});
+
+const start = ({ memos, confirm = () => true, copy = () => {} } = {}) => {
+  const storage = fakeStorage(memos);
+  initMemoApp({ root: document, storage, confirm, copy });
+  return storage;
+};
+
+beforeEach(() => {
+  document.body.innerHTML = body;
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe('初期表示', () => {
+  it('メモがなければ新規メモを作って保存する', () => {
+    const storage = start();
+    expect(items()).toHaveLength(1);
+    expect(items()[0].textContent).toBe('無題のメモ');
+    expect(stored(storage)).toHaveLength(1);
+  });
+
+  it('メモがあれば先頭のメモを表示する', () => {
+    start({ memos: [memo(1, 'first'), memo(2, 'second')] });
+    expect(q('.content-input').value).toBe('first');
+    expect(items()[0].classList.contains('active')).toBe(true);
+  });
+});
+
+describe('保存', () => {
+  it('保存ボタンで本文とタイトルを保存する', () => {
+    const storage = start({ memos: [memo(1, 'old')] });
+    q('.content-input').value = 'new content';
+    q('.save-btn').click();
+    expect(stored(storage)[0]).toMatchObject({
+      content: 'new content',
+      title: 'new content',
+    });
+    expect(q('.log-message').textContent).toBe('メモを保存しました');
+  });
+
+  it('入力が1秒止まると自動保存する', () => {
+    const storage = start({ memos: [memo(1, 'old')] });
+    typeContent('typed');
+    vi.advanceTimersByTime(999);
+    expect(stored(storage)[0].content).toBe('old');
+    vi.advanceTimersByTime(1);
+    expect(stored(storage)[0].content).toBe('typed');
+    expect(q('.log-message').textContent).toBe('メモを自動保存しました');
+  });
+
+  it('空白のみの内容は自動保存しない', () => {
+    const storage = start({ memos: [memo(1, 'old')] });
+    typeContent('   ');
+    vi.advanceTimersByTime(1000);
+    expect(stored(storage)[0].content).toBe('old');
+  });
+
+  it('入力中にタイトル表示を更新する', () => {
+    start({ memos: [memo(1, 'old')] });
+    typeContent('あ'.repeat(25));
+    expect(q('.title-display').textContent).toBe('あ'.repeat(20));
+    typeContent('');
+    expect(q('.title-display').textContent).toBe('新しいメモ');
+  });
+});
+
+describe('削除', () => {
+  it('確認でキャンセルしたら削除しない', () => {
+    const storage = start({
+      memos: [memo(1, 'a'), memo(2, 'b')],
+      confirm: () => false,
+    });
+    q('.delete-btn').click();
+    expect(stored(storage)).toHaveLength(2);
+  });
+
+  it('確認で承諾したら削除して先頭のメモを表示する', () => {
+    const confirm = vi.fn(() => true);
+    const storage = start({ memos: [memo(1, 'a'), memo(2, 'b')], confirm });
+    q('.delete-btn').click();
+    expect(confirm).toHaveBeenCalledWith('"a" を削除します。よろしいですか？');
+    expect(stored(storage).map((m) => m.id)).toEqual([2]);
+    expect(q('.content-input').value).toBe('b');
+  });
+
+  it('最後の1件を削除したら新規メモを作る', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    q('.delete-btn').click();
+    expect(stored(storage)).toHaveLength(1);
+    expect(stored(storage)[0].content).toBe('');
+  });
+});
+
+describe('一覧と検索', () => {
+  it('新しいメモは先頭に追加される', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    q('.new-memo-btn').click();
+    expect(stored(storage)).toHaveLength(2);
+    expect(items()[0].classList.contains('active')).toBe(true);
+  });
+
+  it('一覧のメモをクリックするとそのメモを表示する', () => {
+    start({ memos: [memo(1, 'a'), memo(2, 'b')] });
+    items()[1].click();
+    expect(q('.content-input').value).toBe('b');
+  });
+
+  it('検索語に合うメモだけ表示する', () => {
+    start({ memos: [memo(1, 'apple'), memo(2, 'banana')] });
+    q('.search-input').value = 'ban';
+    q('.search-input').dispatchEvent(new Event('input'));
+    expect(items().map((i) => i.textContent)).toEqual(['banana']);
+  });
+
+  it('検索中でも選択したメモを正しく表示する', () => {
+    start({ memos: [memo(1, 'apple'), memo(2, 'banana')] });
+    q('.search-input').value = 'ban';
+    q('.search-input').dispatchEvent(new Event('input'));
+    items()[0].click();
+    expect(q('.content-input').value).toBe('banana');
+  });
+});
+
+describe('コピー', () => {
+  it('本文を選択してコピーする', () => {
+    const copy = vi.fn();
+    start({ memos: [memo(1, 'a')], copy });
+    q('.copy-btn').click();
+    expect(copy).toHaveBeenCalledOnce();
+    expect(q('.log-message').textContent).toBe('コンテンツをコピーしました');
+  });
+});
