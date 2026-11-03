@@ -27,6 +27,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - `src/main.js` メモ画面のエントリポイント（実際の `document` / `localStorage` / `sessionStorage` を渡して起動する）
 - `src/memo.js` UI層。DOM・storage・confirm・コピー処理を引数で受け取る
 - `src/memo-store.js` メモの作成・更新・削除・検索を行う純粋関数
+- `src/sidebar.js` サイドバーの幅をドラッグで変える処理（メモ本体とは独立）
 - `src/storage.js` `localStorage`（通常メモ）と `sessionStorage`（シークレットメモ）への読み書き
 - `src/*.test.js` テスト（`tsc` の対象外）
 - `icons/` 拡張機能のアイコン
@@ -38,6 +39,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - メモは `localStorage` の `memos` キーに JSON 配列で保存する（`chrome.storage` は使っていない）
 - シークレットメモ（`secret: true`）は `sessionStorage` の `memos` キーにだけ保存し、`localStorage` には書かない。メモ画面のタブを閉じると消える（リロードでは残る）
 - シークレットメモを開いている間は、`.main-content.secret` と一覧の `.memo-item.secret` でダークグレーの配色になり、`.secret-label` が表示される（本文欄の大きさが変わらないよう、ラベルは絶対配置で上余白に重ねる）
+- サイドバーの幅は 200〜600px（既定 280px）で、ドラッグで変えた幅を `localStorage` の `sidebarWidth` に保存する（`memos` とは別のキー）
 - メモのタイトルは保存後の本文の先頭20文字
 - メモの選択は `id` で管理する（配列のインデックスに依存しない）
 - 入力が1秒止まると自動保存する（空白のみの内容は保存しない）
