@@ -43,7 +43,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - シークレットメモを開いている間は、`.main-content.secret` と一覧の `.memo-item.secret` でダークグレーの配色になり、`.secret-label` が表示される（本文欄の大きさが変わらないよう、ラベルは絶対配置で上余白に重ねる）
 - エディタは `textarea`（`.content-input`）の背面に、色付きの `pre`（`.editor-highlight`）を重ねた構成。両者のフォント・余白・折り返し・スクロールは必ずそろえる。ハイライトは色と下線だけにし、太字・斜体・サイズは使わない（文字の位置がずれるため）
 - エクスポートは `{version: 1, exportedAt, memos}` の JSON で、シークレットメモは含めない。インポートは今あるメモに追加し、同じ `id` はスキップする。取り込んだメモは常に通常メモ。一覧の並びは `id` の降順で決まるため、`id` を保てば並びも維持される
-- サイドバーはメイン画面左上の `.sidebar-toggle` で開閉でき、閉じた状態は `localStorage` の `sidebarCollapsed` に保存する（閉じても幅の保存値は変わらない）
+- サイドバーは「SimpleNote」の横の `.sidebar-close` で閉じ、閉じている間だけ出るメイン画面左上の `.sidebar-open` で開く（どちらも `.sidebar-toggle`）。閉じた状態は `localStorage` の `sidebarCollapsed` に保存する（閉じても幅の保存値は変わらない）
 - サイドバーの幅は 200〜600px（既定 280px）で、ドラッグで変えた幅を `localStorage` の `sidebarWidth` に保存する（`memos` とは別のキー）
 - メモのタイトルは保存後の本文の先頭20文字
 - メモの選択は `id` で管理する（配列のインデックスに依存しない）

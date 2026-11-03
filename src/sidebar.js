@@ -66,19 +66,24 @@ export function initSidebarResize({ root, storage }) {
  */
 export function initSidebarToggle({ root, storage }) {
   const container = query(root, '.container');
-  const toggle = query(root, '.sidebar-toggle');
+  // 開いている間は「SimpleNote」の横、閉じている間はメイン画面の左上のボタンを使う
+  const toggles = root.querySelectorAll('.sidebar-toggle');
 
   /** @param {boolean} collapsed */
   function setCollapsed(collapsed) {
     container.classList.toggle('sidebar-collapsed', collapsed);
-    toggle.setAttribute('aria-expanded', String(!collapsed));
+    for (const toggle of toggles) {
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+    }
   }
 
   setCollapsed(storage.getItem(COLLAPSED_KEY) === 'true');
 
-  toggle.addEventListener('click', () => {
-    const collapsed = !container.classList.contains('sidebar-collapsed');
-    setCollapsed(collapsed);
-    storage.setItem(COLLAPSED_KEY, String(collapsed));
-  });
+  for (const toggle of toggles) {
+    toggle.addEventListener('click', () => {
+      const collapsed = !container.classList.contains('sidebar-collapsed');
+      setCollapsed(collapsed);
+      storage.setItem(COLLAPSED_KEY, String(collapsed));
+    });
+  }
 }

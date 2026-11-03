@@ -8,7 +8,16 @@
   <body>
     <div class="container">
       <div class="sidebar">
-        <div class="sidebar-title">SimpleNote</div>
+        <div class="sidebar-header">
+          <div class="sidebar-title">SimpleNote</div>
+          <button
+            class="sidebar-toggle sidebar-close"
+            aria-label="サイドバーを閉じる"
+            aria-expanded="true"
+          >
+            «
+          </button>
+        </div>
         <button class="new-memo-btn">＋ 新しいメモ</button>
         <button class="secret-memo-btn">🔒 シークレットメモ</button>
         <input type="text" class="search-input" placeholder="メモを検索..." />
@@ -33,8 +42,8 @@
         </div>
         <div class="main-header">
           <button
-            class="sidebar-toggle"
-            aria-label="サイドバーを開閉"
+            class="sidebar-toggle sidebar-open"
+            aria-label="サイドバーを開く"
             aria-expanded="true"
           >
             ☰
