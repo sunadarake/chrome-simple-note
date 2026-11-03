@@ -46,12 +46,18 @@ describe('parseImport', () => {
   it.each([
     ['id がない', { content: 'a' }],
     ['id が数値でない', { id: '1', content: 'a' }],
-    ['id が有限でない', { id: 1e999, content: 'a' }],
     ['content が文字列でない', { id: 1, content: 5 }],
     ['メモが null', null],
   ])('メモの %s場合は、何件目かを示してエラーにする', (_, item) => {
     expect(() => parseImport(file([memo(1), item]))).toThrow(
       '2 件目のメモの形式が正しくありません',
+    );
+  });
+
+  it('id が有限でない数値（1e999 は Infinity になる）場合はエラーにする', () => {
+    const text = '{"version":1,"memos":[{"id":1e999,"content":"a"}]}';
+    expect(() => parseImport(text)).toThrow(
+      '1 件目のメモの形式が正しくありません',
     );
   });
 
