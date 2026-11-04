@@ -49,6 +49,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - メモの選択は `id` で管理する（配列のインデックスに依存しない）
 - 入力が1秒止まると自動保存する（空白のみの内容は保存しない）
 - `manifest.json` に `permissions` は宣言していない（`chrome.tabs.create` などは権限なしで使える）。使っていない権限があると Chrome ウェブストアの審査で不承認になるため、本当に必要になった権限だけを足す
+- `manifest.json` の `key` は拡張機能IDを固定するための公開鍵。変更・削除するとIDが変わる
 - バージョンは `manifest.json` の `version` で決まる。リリース前に手で更新する（zip 名とタグ `v<version>` に使われる）
 - `release-notes.md` の「概要」は 2〜3 行で簡潔に書く。機能を追加しても行を増やさず、まとめ直す
 - `publish.sh` は未コミットの変更・未 push のコミット・同じタグの Release があると止まる
