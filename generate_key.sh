@@ -32,7 +32,7 @@ extension_id=$(printf '%s' "$public_der" | base64 -d | openssl dgst -sha256 -bin
 tmp=$(mktemp)
 trap 'rm -f "$tmp"' EXIT
 # 他のキーの並びを変えないよう、name の直後に key を入れる
-jq --indent 4 --arg key "$public_der" \
+jq --indent 2 --arg key "$public_der" \
     'to_entries | map(., if .key == "name" then {key: "key", value: $key} else empty end) | from_entries' \
     manifest.json >"$tmp"
 cat "$tmp" >manifest.json
