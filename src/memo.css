@@ -204,7 +204,8 @@ body {
 .main-content {
   position: relative;
   flex: 1;
-  padding: 30px;
+  /* 上の30pxはログとシークレットのラベルを重ねる場所なので残す */
+  padding: 30px 6px 6px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -216,7 +217,7 @@ body {
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid #eee;
-  margin-bottom: 25px;
+  margin-bottom: 6px;
 }
 
 .sidebar-toggle {
@@ -275,7 +276,7 @@ body {
   flex: 1;
   font-size: 24px;
   font-weight: 500;
-  padding: 15px 0;
+  padding: 6px 0;
   color: #333;
   min-height: 40px;
 }
@@ -384,7 +385,7 @@ body {
   right: 0;
   height: 30px;
   line-height: 30px;
-  padding: 0 30px;
+  padding: 0 6px;
   background: #566573;
   color: #ecf0f1;
   font-size: 14px;
@@ -477,7 +478,7 @@ body {
   pointer-events: none;
   height: 30px;
   line-height: 30px;
-  padding: 0 30px;
+  padding: 0 6px;
   border: 1px solid #ddd;
   background-color: #f2f2f2;
   color: #555;
@@ -512,7 +513,7 @@ body {
 .copy-btn,
 .save-btn,
 .delete-btn {
-  padding: 8px 16px;
+  padding: 6px;
   border: 1px solid;
   border-radius: 6px;
   background: transparent;
