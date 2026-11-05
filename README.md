@@ -40,3 +40,6 @@ Chrome で `chrome://extensions` を開き、「デベロッパーモード」�
 | `npm run format` | Prettier で整形する |
 | `./release.sh` | 配布用の zip を `release/` に作る |
 | `./publish.sh` | zip を GitHub Release に公開する |
+
+## ライセンス
+[MIT License](LICENSE)

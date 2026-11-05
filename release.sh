@@ -11,6 +11,6 @@ mkdir -p release
 # 前のバージョンの zip が残らないよう、作る前に消す
 rm -f release/*.zip
 # テストファイルは拡張機能の実行に不要なので含めない
-zip -r "$zip_path" manifest.json icons src -x '*.test.js'
+zip -r "$zip_path" manifest.json LICENSE icons src -x '*.test.js'
 
 echo "作成しました: $zip_path"
