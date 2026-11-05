@@ -282,6 +282,36 @@ describe('マークダウンのハイライト', () => {
   });
 });
 
+describe('サイドバーのメニュー', () => {
+  it('「☰」で開閉する', () => {
+    start();
+    expect(q('.sidebar-menu').hidden).toBe(true);
+    q('.sidebar-menu-btn').click();
+    expect(q('.sidebar-menu').hidden).toBe(false);
+    expect(q('.sidebar-menu-btn').getAttribute('aria-expanded')).toBe('true');
+    q('.sidebar-menu-btn').click();
+    expect(q('.sidebar-menu').hidden).toBe(true);
+  });
+
+  it('項目を選ぶと閉じる', () => {
+    start();
+    q('.sidebar-menu-btn').click();
+    q('.export-btn').click();
+    expect(q('.sidebar-menu').hidden).toBe(true);
+    q('.sidebar-menu-btn').click();
+    q('.import-btn').click();
+    expect(q('.sidebar-menu').hidden).toBe(true);
+  });
+
+  it('メニューの外をクリックすると閉じる', () => {
+    start();
+    q('.sidebar-menu-btn').click();
+    q('.search-input').click();
+    expect(q('.sidebar-menu').hidden).toBe(true);
+    expect(q('.sidebar-menu-btn').getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
 describe('エクスポート', () => {
   it('通常メモを渡された順のままファイルとして書き出す', () => {
     const download = vi.fn();

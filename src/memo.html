@@ -9,7 +9,26 @@
     <div class="container">
       <div class="sidebar">
         <div class="sidebar-header">
+          <div class="sidebar-menu-wrap">
+            <button
+              class="sidebar-menu-btn"
+              aria-label="メニュー"
+              aria-expanded="false"
+            >
+              ☰
+            </button>
+            <div class="sidebar-menu" hidden>
+              <button class="export-btn">エクスポート</button>
+              <button class="import-btn">インポート</button>
+            </div>
+          </div>
           <div class="sidebar-title">SimpleNote</div>
+          <input
+            type="file"
+            class="import-input"
+            accept=".json,application/json"
+            hidden
+          />
           <button
             class="sidebar-toggle sidebar-close"
             aria-label="サイドバーを閉じる"
@@ -24,16 +43,6 @@
         <div class="memo-list">
           <!-- メモリストがここに表示されます -->
         </div>
-        <div class="sidebar-transfer">
-          <button class="export-btn">エクスポート</button>
-          <button class="import-btn">インポート</button>
-          <input
-            type="file"
-            class="import-input"
-            accept=".json,application/json"
-            hidden
-          />
-        </div>
       </div>
       <div class="sidebar-resizer"></div>
       <div class="main-content">
@@ -46,7 +55,7 @@
             aria-label="サイドバーを開く"
             aria-expanded="true"
           >
-            ☰
+            »
           </button>
           <div class="title-display">新しいメモ</div>
         </div>

@@ -50,6 +50,8 @@ export function initMemoApp({
   const saveBtn = query('.save-btn');
   const deleteBtn = query('.delete-btn');
   const logMessage = query('.log-message');
+  const menuBtn = query('.sidebar-menu-btn');
+  const menu = /** @type {HTMLElement} */ (query('.sidebar-menu'));
   const exportBtn = query('.export-btn');
   const importBtn = query('.import-btn');
   const importInput = /** @type {HTMLInputElement} */ (query('.import-input'));
@@ -191,6 +193,12 @@ export function initMemoApp({
     showLogMessage(`${count}件をエクスポートしました`);
   }
 
+  /** @param {boolean} open */
+  function setMenuOpen(open) {
+    menu.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', String(open));
+  }
+
   async function importFromFile() {
     const file = importInput.files?.[0];
     if (!file) return;
@@ -220,8 +228,21 @@ export function initMemoApp({
   copyBtn.addEventListener('click', copyContent);
   saveBtn.addEventListener('click', saveMemo);
   deleteBtn.addEventListener('click', deleteMemo);
-  exportBtn.addEventListener('click', exportToFile);
-  importBtn.addEventListener('click', () => importInput.click());
+  menuBtn.addEventListener('click', () => setMenuOpen(menu.hidden === true));
+  root.addEventListener('click', (event) => {
+    const target = /** @type {Node} */ (event.target);
+    if (!menu.contains(target) && !menuBtn.contains(target)) {
+      setMenuOpen(false);
+    }
+  });
+  exportBtn.addEventListener('click', () => {
+    setMenuOpen(false);
+    exportToFile();
+  });
+  importBtn.addEventListener('click', () => {
+    setMenuOpen(false);
+    importInput.click();
+  });
   importInput.addEventListener('change', importFromFile);
 
   if (memos.length > 0) {
