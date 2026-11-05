@@ -271,6 +271,19 @@ body {
   color: #666;
 }
 
+.settings-hint {
+  margin: 0;
+  font-size: 13px;
+  color: #888;
+}
+
+/* ファイルをドラッグしている間、ドロップできる範囲を示す */
+.settings-panel.drop-active {
+  outline: 2px dashed #999;
+  outline-offset: -2px;
+  background: rgba(0, 0, 0, 0.03);
+}
+
 .settings-row {
   display: flex;
   align-items: center;
@@ -755,4 +768,10 @@ body:has(.container[data-theme='dark']) {
 
 .container[data-theme='dark'] ::-webkit-scrollbar-thumb {
   background: #555;
+}
+
+.container[data-theme='dark'] .settings-panel.drop-active,
+.main-content.secret .settings-panel.drop-active {
+  outline-color: #888;
+  background: rgba(255, 255, 255, 0.05);
 }

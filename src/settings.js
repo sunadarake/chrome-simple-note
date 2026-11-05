@@ -2,12 +2,14 @@ const KEY = 'settings';
 
 export const AUTO_SAVE_DELAY_RANGE = { min: 500, max: 5000 };
 export const FONT_SIZE_RANGE = { min: 12, max: 24 };
+export const TITLE_LENGTH_RANGE = { min: 10, max: 100 };
 
 /**
  * @typedef {object} Settings
  * @property {boolean} autoSave
  * @property {number} autoSaveDelayMs
  * @property {number} fontSize
+ * @property {number} titleLength タイトルにする本文の先頭の文字数
  * @property {'light' | 'dark'} theme
  */
 
@@ -16,6 +18,7 @@ export const DEFAULT_SETTINGS = {
   autoSave: true,
   autoSaveDelayMs: 1000,
   fontSize: 16,
+  titleLength: 30,
   theme: 'light',
 };
 
@@ -58,6 +61,11 @@ export function loadSettings(storage) {
       saved.fontSize,
       FONT_SIZE_RANGE,
       DEFAULT_SETTINGS.fontSize,
+    ),
+    titleLength: clampNumber(
+      saved.titleLength,
+      TITLE_LENGTH_RANGE,
+      DEFAULT_SETTINGS.titleLength,
     ),
     theme: saved.theme === 'dark' ? 'dark' : 'light',
   };

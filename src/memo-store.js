@@ -7,14 +7,18 @@
  * @property {boolean} [secret] シークレットメモ。タブを閉じると消える
  */
 
-const TITLE_LENGTH = 20;
-
 /**
+ * 本文の最初の1行を、前後の空白と先頭の見出し記号（# や ##）を除いて、指定の文字数まで
  * @param {string} content
+ * @param {number} length
  * @returns {string}
  */
-export function titleOf(content) {
-  return content.substring(0, TITLE_LENGTH);
+export function titleOf(content, length) {
+  const firstLine = content.trim().split('\n')[0];
+  return firstLine
+    .replace(/^#+(\s+|$)/, '')
+    .trim()
+    .substring(0, length);
 }
 
 /**
@@ -37,12 +41,28 @@ export function createMemo(now = new Date(), secret = false) {
  * @param {Memo[]} memos
  * @param {number} id
  * @param {string} content
+ * @param {number} titleLength
  * @returns {Memo[]}
  */
-export function updateContent(memos, id, content) {
+export function updateContent(memos, id, content, titleLength) {
   return memos.map((memo) =>
-    memo.id === id ? { ...memo, content, title: titleOf(content) } : memo,
+    memo.id === id
+      ? { ...memo, content, title: titleOf(content, titleLength) }
+      : memo,
   );
+}
+
+/**
+ * 全メモのタイトルを本文から作り直す。変わらないメモは同じオブジェクトのまま返す
+ * @param {Memo[]} memos
+ * @param {number} titleLength
+ * @returns {Memo[]}
+ */
+export function retitle(memos, titleLength) {
+  return memos.map((memo) => {
+    const title = titleOf(memo.content, titleLength);
+    return title === memo.title ? memo : { ...memo, title };
+  });
 }
 
 /**

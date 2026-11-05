@@ -25,7 +25,7 @@ const typeContent = (value) => {
 };
 const memo = (id, content) => ({
   id,
-  title: content.substring(0, 20),
+  title: content.substring(0, 30),
   content,
   createdAt: '2026-01-01T00:00:00.000Z',
 });
@@ -114,8 +114,8 @@ describe('保存', () => {
 
   it('入力中にタイトル表示を更新する', () => {
     start({ memos: [memo(1, 'old')] });
-    typeContent('あ'.repeat(25));
-    expect(q('.title-display').textContent).toBe('あ'.repeat(20));
+    typeContent('あ'.repeat(35));
+    expect(q('.title-display').textContent).toBe('あ'.repeat(30));
     typeContent('');
     expect(q('.title-display').textContent).toBe('新しいメモ');
   });
@@ -410,6 +410,7 @@ describe('設定パネル', () => {
       autoSave: true,
       autoSaveDelayMs: 3000,
       fontSize: 20,
+      titleLength: 30,
       theme: 'dark',
     });
     document.body.innerHTML = body;
@@ -476,6 +477,64 @@ describe('設定パネル', () => {
     expect(q('.editor-highlight').innerHTML).toBe(
       '<span class="md-heading"># a</span>',
     );
+  });
+
+  describe('タイトルの文字数', () => {
+    const long = 'あ'.repeat(120);
+
+    it('既定は30文字で、保存・一覧・タイトル表示に使う', () => {
+      const storage = start({ memos: [memo(1, 'a')] });
+      typeContent(long);
+      vi.advanceTimersByTime(1000);
+      expect(stored(storage)[0].title).toBe('あ'.repeat(30));
+      expect(items()[0].textContent).toBe('あ'.repeat(30));
+      expect(q('.title-display').textContent).toBe('あ'.repeat(30));
+    });
+
+    it('変えると保存済みの全メモ（シークレットも）のタイトルを作り直す', () => {
+      const storage = start({ memos: [memo(2, long), memo(1, long)] });
+      q('.secret-memo-btn').click();
+      typeContent(long);
+      q('.save-btn').click();
+      change('.title-length-input', '10');
+      expect(stored(storage).map((m) => m.title)).toEqual([
+        'あ'.repeat(10),
+        'あ'.repeat(10),
+      ]);
+      expect(JSON.parse(storage.session.data.memos)[0].title).toBe(
+        'あ'.repeat(10),
+      );
+      expect(items().map((i) => i.textContent)).toEqual([
+        '🔒 ' + 'あ'.repeat(10),
+        'あ'.repeat(10),
+        'あ'.repeat(10),
+      ]);
+      expect(q('.title-display').textContent).toBe('あ'.repeat(10));
+    });
+
+    it('再起動しても保たれる', () => {
+      const storage = start({ memos: [memo(1, long)] });
+      change('.title-length-input', '50');
+      document.body.innerHTML = body;
+      initMemoApp({
+        root: document,
+        storage,
+        sessionStorage: storage.session,
+        confirm: () => true,
+        copy: () => {},
+        download: () => {},
+      });
+      expect(q('.title-length-input').value).toBe('50');
+      expect(items()[0].textContent).toBe('あ'.repeat(50));
+    });
+
+    it('起動時に、古い文字数で保存されたタイトルを直す', () => {
+      const storage = start({
+        memos: [{ ...memo(1, long), title: 'あ'.repeat(20) }],
+      });
+      expect(items()[0].textContent).toBe('あ'.repeat(30));
+      expect(stored(storage)[0].title).toBe('あ'.repeat(30));
+    });
   });
 
   it('壊れた保存値は既定値で動く', () => {
@@ -594,6 +653,14 @@ describe('インポート', () => {
     );
   });
 
+  it('ファイルに書かれたタイトルは、今の文字数に作り直す', async () => {
+    const storage = start({ memos: [memo(2, 'b')] });
+    await importFile(
+      file([{ ...memo(1, 'あ'.repeat(40)), title: '古いタイトル' }]),
+    );
+    expect(stored(storage).find((m) => m.id === 1).title).toBe('あ'.repeat(30));
+  });
+
   it('同じ id はスキップし、今ある内容は変えない', async () => {
     const storage = start({ memos: [memo(1, 'mine')] });
     await importFile(file([memo(1, 'other')]));
@@ -626,6 +693,114 @@ describe('インポート', () => {
     start({ memos: [memo(1, 'a')] });
     await importFile(file([]));
     expect(q('.import-input').value).toBe('');
+  });
+
+  describe('ドラッグ＆ドロップ', () => {
+    const drag = (type, files, target = q('.settings-panel')) => {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      event.dataTransfer = { types: files ? ['Files'] : ['text/plain'], files };
+      target.dispatchEvent(event);
+      return event;
+    };
+    const jsonFile = (name, text) => ({
+      name,
+      text: () => Promise.resolve(text),
+    });
+    const drop = async (files, target) => {
+      const event = drag('drop', files, target);
+      await vi.advanceTimersByTimeAsync(0);
+      return event;
+    };
+
+    it('設定パネルにドロップしたファイルを取り込む', async () => {
+      const storage = start({ memos: [memo(2, 'b')] });
+      q('.settings-btn').click();
+      await drop([jsonFile('a.json', file([memo(1, 'a')]))]);
+      expect(stored(storage).map((m) => m.id)).toEqual([2, 1]);
+      expect(items().map((i) => i.textContent)).toEqual(['b', 'a']);
+      expect(q('.log-message').textContent).toBe(
+        '1件をインポートしました（0件は同じIDのためスキップ）',
+      );
+    });
+
+    it('複数のファイルをまとめて取り込み、件数を合計する', async () => {
+      const storage = start({ memos: [memo(3, 'c')] });
+      q('.settings-btn').click();
+      await drop([
+        jsonFile('a.json', file([memo(1, 'a'), memo(3, 'dup')])),
+        jsonFile('b.json', file([memo(2, 'b')])),
+      ]);
+      expect(stored(storage).map((m) => m.id)).toEqual([3, 2, 1]);
+      expect(stored(storage)[0].content).toBe('c');
+      expect(q('.log-message').textContent).toBe(
+        '2件をインポートしました（1件は同じIDのためスキップ）',
+      );
+    });
+
+    it('不正なファイルが混ざっても、ほかは取り込み、失敗を報告する', async () => {
+      const storage = start({ memos: [memo(3, 'c')] });
+      q('.settings-btn').click();
+      await drop([
+        jsonFile('bad.json', 'not json'),
+        jsonFile('ok.json', file([memo(1, 'a')])),
+      ]);
+      expect(stored(storage).map((m) => m.id)).toEqual([3, 1]);
+      expect(q('.log-message').textContent).toBe(
+        '1件をインポートしました（0件は同じIDのためスキップ） / bad.json: JSON として読み込めませんでした',
+      );
+    });
+
+    it('すべて不正なら、メモは変えずに失敗だけ報告する', async () => {
+      const storage = start({ memos: [memo(1, 'a')] });
+      q('.settings-btn').click();
+      await drop([jsonFile('x.json', 'nope'), jsonFile('y.json', '{}')]);
+      expect(stored(storage)).toHaveLength(1);
+      expect(q('.log-message').textContent).toBe(
+        'x.json: JSON として読み込めませんでした / y.json: メモのファイルではありません（形式が違います）',
+      );
+    });
+
+    it('ファイルのドラッグ中だけドロップを許可し、枠を出す', () => {
+      start();
+      q('.settings-btn').click();
+      const over = drag('dragover', [{}]);
+      expect(over.defaultPrevented).toBe(true);
+      expect(q('.settings-panel').classList.contains('drop-active')).toBe(true);
+      drag('dragleave', [{}]);
+      expect(q('.settings-panel').classList.contains('drop-active')).toBe(
+        false,
+      );
+      expect(drag('dragover', null).defaultPrevented).toBe(false);
+    });
+
+    it('ドロップすると枠が消える', async () => {
+      start();
+      q('.settings-btn').click();
+      drag('dragover', [{}]);
+      await drop([jsonFile('a.json', file([]))]);
+      expect(q('.settings-panel').classList.contains('drop-active')).toBe(
+        false,
+      );
+    });
+
+    it('ファイル以外のドロップでは何もしない', async () => {
+      const storage = start({ memos: [memo(1, 'a')] });
+      q('.settings-btn').click();
+      const event = await drop(null);
+      expect(event.defaultPrevented).toBe(false);
+      expect(stored(storage)).toHaveLength(1);
+      expect(q('.log-message').textContent).toBe('');
+    });
+
+    it('設定パネルの外へのドロップは取り込まず、タブが切り替わるのも止める', async () => {
+      const storage = start({ memos: [memo(1, 'a')] });
+      const event = await drop(
+        [jsonFile('a.json', file([memo(2, 'b')]))],
+        q('.editor'),
+      );
+      expect(event.defaultPrevented).toBe(true);
+      expect(stored(storage)).toHaveLength(1);
+    });
   });
 
   it('「インポート」ボタンでファイル選択を開く', () => {

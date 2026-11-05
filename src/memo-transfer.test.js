@@ -62,7 +62,10 @@ describe('parseImport', () => {
   });
 
   it('title と createdAt がなければ補う', () => {
-    const [result] = parseImport(file([{ id: 0, content: 'あ'.repeat(25) }]));
+    const [result] = parseImport(
+      file([{ id: 0, content: 'あ'.repeat(25) }]),
+      20,
+    );
     expect(result.title).toBe('あ'.repeat(20));
     expect(result.createdAt).toBe('1970-01-01T00:00:00.000Z');
   });

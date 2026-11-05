@@ -23,6 +23,7 @@ describe('settings', () => {
       autoSave: false,
       autoSaveDelayMs: 2000,
       fontSize: 20,
+      titleLength: 50,
       theme: 'dark',
     };
     saveSettings(storage, settings);
@@ -49,6 +50,15 @@ describe('settings', () => {
     );
     expect(loaded.autoSaveDelayMs).toBe(500);
     expect(loaded.fontSize).toBe(24);
+  });
+
+  it('タイトルの文字数は既定 30、10〜100 に丸める', () => {
+    expect(loadSettings(fakeStorage()).titleLength).toBe(30);
+    const load = (titleLength) =>
+      loadSettings(fakeStorage(JSON.stringify({ titleLength }))).titleLength;
+    expect(load(5)).toBe(10);
+    expect(load(500)).toBe(100);
+    expect(load('30')).toBe(30);
   });
 
   it('数値でない値は既定値にする', () => {

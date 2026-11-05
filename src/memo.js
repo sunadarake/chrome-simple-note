@@ -4,6 +4,7 @@ import {
   createMemo,
   filterMemos,
   removeMemo,
+  retitle,
   titleOf,
   updateContent,
 } from './memo-store.js';
@@ -69,6 +70,9 @@ export function initMemoApp({
   const fontSizeInput = /** @type {HTMLSelectElement} */ (
     query('.font-size-input')
   );
+  const titleLengthInput = /** @type {HTMLSelectElement} */ (
+    query('.title-length-input')
+  );
   const themeInput = /** @type {HTMLSelectElement} */ (query('.theme-input'));
 
   let memos = loadMemos(storage, sessionStorage);
@@ -122,7 +126,8 @@ export function initMemoApp({
 
   /** @param {string} content */
   function updateTitleDisplay(content) {
-    titleDisplay.textContent = titleOf(content) || '新しいメモ';
+    titleDisplay.textContent =
+      titleOf(content, settings.titleLength) || '新しいメモ';
   }
 
   /**
@@ -148,7 +153,12 @@ export function initMemoApp({
 
   function persistCurrentContent() {
     if (currentId === null) return;
-    memos = updateContent(memos, currentId, contentInput.value);
+    memos = updateContent(
+      memos,
+      currentId,
+      contentInput.value,
+      settings.titleLength,
+    );
     saveMemos(storage, sessionStorage, memos);
     renderMemoList();
     lastContent = contentInput.value;
@@ -269,38 +279,84 @@ export function initMemoApp({
     autoSaveInput.checked = settings.autoSave;
     autoSaveDelayInput.value = String(settings.autoSaveDelayMs);
     fontSizeInput.value = String(settings.fontSize);
+    titleLengthInput.value = String(settings.titleLength);
     themeInput.value = settings.theme;
     applySettings();
+  }
+
+  // タイトルは本文から作るので、文字数の設定と保存済みのタイトルをそろえる
+  function retitleAll() {
+    const retitled = retitle(memos, settings.titleLength);
+    if (retitled.every((memo, i) => memo === memos[i])) return;
+    memos = retitled;
+    saveMemos(storage, sessionStorage, memos);
   }
 
   function changeSettings() {
     settings.autoSave = autoSaveInput.checked;
     settings.autoSaveDelayMs = Number(autoSaveDelayInput.value);
     settings.fontSize = Number(fontSizeInput.value);
+    settings.titleLength = Number(titleLengthInput.value);
     settings.theme = themeInput.value === 'dark' ? 'dark' : 'light';
     if (!settings.autoSave) clearTimeout(autoSaveTimer);
     saveSettings(storage, settings);
     applySettings();
+    retitleAll();
+    renderMemoList();
+    updateTitleDisplay(contentInput.value);
   }
 
-  async function importFromFile() {
-    const file = importInput.files?.[0];
-    if (!file) return;
-    try {
-      const result = mergeMemos(memos, parseImport(await file.text()));
-      memos = result.memos;
+  /** @param {File[]} files */
+  async function importFiles(files) {
+    let added = 0;
+    let skipped = 0;
+    let succeeded = 0;
+    /** @type {string[]} */
+    const failures = [];
+    for (const file of files) {
+      try {
+        const result = mergeMemos(
+          memos,
+          parseImport(await file.text(), settings.titleLength),
+        );
+        memos = result.memos;
+        added += result.added;
+        skipped += result.skipped;
+        succeeded++;
+      } catch (error) {
+        const message = /** @type {Error} */ (error).message;
+        // ファイルが1つなら、理由だけを出す
+        failures.push(
+          files.length === 1 ? message : `${file.name}: ${message}`,
+        );
+      }
+    }
+    if (succeeded > 0) {
+      // ファイルに書かれたタイトルは、今の文字数に作り直す
+      memos = retitle(memos, settings.titleLength);
       saveMemos(storage, sessionStorage, memos);
       renderMemoList();
-      showLogMessage(
-        `${result.added}件をインポートしました（${result.skipped}件は同じIDのためスキップ）`,
-      );
-    } catch (error) {
-      showLogMessage(/** @type {Error} */ (error).message);
-    } finally {
-      // 同じファイルをもう一度選んでも change が起きるようにする
-      importInput.value = '';
     }
+    const summary = `${added}件をインポートしました（${skipped}件は同じIDのためスキップ）`;
+    showLogMessage(
+      succeeded > 0 ? [summary, ...failures].join(' / ') : failures.join(' / '),
+    );
   }
+
+  async function importFromInput() {
+    const files = [...(importInput.files ?? [])];
+    // 同じファイルをもう一度選んでも change が起きるようにする
+    importInput.value = '';
+    if (files.length > 0) await importFiles(files);
+  }
+
+  /** @param {DragEvent} event */
+  const hasFiles = (event) =>
+    Boolean(event.dataTransfer?.types.includes('Files'));
+
+  /** @param {Event} event */
+  const inPanel = (event) =>
+    settingsPanel.contains(/** @type {Node | null} */ (event.target));
 
   newMemoBtn.addEventListener('click', () => createNewMemo(false));
   secretMemoBtn.addEventListener('click', () => createNewMemo(true));
@@ -320,6 +376,7 @@ export function initMemoApp({
     autoSaveInput,
     autoSaveDelayInput,
     fontSizeInput,
+    titleLengthInput,
     themeInput,
   ]) {
     input.addEventListener('change', changeSettings);
@@ -327,9 +384,30 @@ export function initMemoApp({
   exportBtn.addEventListener('click', exportToFile);
   importBtn.addEventListener('click', () => importInput.click());
   deleteAllBtn.addEventListener('click', deleteAllMemos);
-  importInput.addEventListener('change', importFromFile);
+  importInput.addEventListener('change', importFromInput);
+  // 設定パネルの外にドロップすると、Chrome がタブをファイル表示に切り替えてしまうので止める
+  root.addEventListener('dragover', (event) => {
+    const dragEvent = /** @type {DragEvent} */ (event);
+    if (!hasFiles(dragEvent)) return;
+    event.preventDefault();
+    settingsPanel.classList.toggle('drop-active', inPanel(event));
+  });
+  root.addEventListener('dragleave', (event) => {
+    const related = /** @type {DragEvent} */ (event).relatedTarget;
+    if (!settingsPanel.contains(/** @type {Node | null} */ (related))) {
+      settingsPanel.classList.remove('drop-active');
+    }
+  });
+  root.addEventListener('drop', (event) => {
+    const dragEvent = /** @type {DragEvent} */ (event);
+    if (!hasFiles(dragEvent)) return;
+    event.preventDefault();
+    settingsPanel.classList.remove('drop-active');
+    if (inPanel(event)) importFiles([...(dragEvent.dataTransfer?.files ?? [])]);
+  });
 
   showSettings();
+  retitleAll();
   if (memos.length > 0) {
     loadMemo(memos[0].id);
   } else {

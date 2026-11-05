@@ -32,9 +32,10 @@ export function exportMemos(memos, now) {
 /**
  * 取り込むメモは、ファイルに secret があっても通常メモにする
  * @param {string} text
+ * @param {number} titleLength
  * @returns {import('./memo-store.js').Memo[]}
  */
-export function parseImport(text) {
+export function parseImport(text, titleLength) {
   let data;
   try {
     data = JSON.parse(text);
@@ -56,7 +57,9 @@ export function parseImport(text) {
       return {
         id: item.id,
         title:
-          typeof item.title === 'string' ? item.title : titleOf(item.content),
+          typeof item.title === 'string'
+            ? item.title
+            : titleOf(item.content, titleLength),
         content: item.content,
         createdAt:
           typeof item.createdAt === 'string'

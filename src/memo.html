@@ -22,6 +22,7 @@
             type="file"
             class="import-input"
             accept=".json,application/json"
+            multiple
             hidden
           />
           <button
@@ -79,6 +80,9 @@
                 全メモ削除
               </button>
             </div>
+            <p class="settings-hint">
+              JSON ファイルをこの画面にドラッグ＆ドロップしても取り込めます
+            </p>
           </section>
           <section class="settings-section">
             <h2>自動保存</h2>
@@ -108,6 +112,18 @@
                 <option value="18">18px</option>
                 <option value="20">20px</option>
                 <option value="24">24px</option>
+              </select>
+            </label>
+            <label class="settings-row">
+              タイトルの文字数
+              <select class="title-length-input">
+                <option value="10">10文字</option>
+                <option value="20">20文字</option>
+                <option value="30">30文字</option>
+                <option value="40">40文字</option>
+                <option value="50">50文字</option>
+                <option value="75">75文字</option>
+                <option value="100">100文字</option>
               </select>
             </label>
             <label class="settings-row">
