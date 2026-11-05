@@ -9,30 +9,14 @@
     <div class="container">
       <div class="sidebar">
         <div class="sidebar-header">
-          <div class="sidebar-menu-wrap">
-            <button
-              class="sidebar-menu-btn"
-              aria-label="メニュー"
-              title="エクスポート／インポート"
-              aria-expanded="false"
-            >
-              ☰
-            </button>
-            <div class="sidebar-menu" hidden>
-              <button
-                class="export-btn"
-                title="通常メモを JSON ファイルに書き出す"
-              >
-                エクスポート
-              </button>
-              <button
-                class="import-btn"
-                title="JSON ファイルからメモを追加する"
-              >
-                インポート
-              </button>
-            </div>
-          </div>
+          <button
+            class="settings-btn"
+            aria-label="設定"
+            title="設定"
+            aria-expanded="false"
+          >
+            ⚙
+          </button>
           <div class="sidebar-title">SimpleNote</div>
           <input
             type="file"
@@ -66,6 +50,75 @@
           🔒 シークレットメモ（タブを閉じると消えます）
         </div>
         <div class="log-message"></div>
+        <div class="settings-panel" hidden>
+          <div class="settings-header">
+            <div class="settings-title">設定</div>
+            <button class="settings-close-btn" title="設定を閉じる">
+              閉じる
+            </button>
+          </div>
+          <section class="settings-section">
+            <h2>データ</h2>
+            <div class="settings-row">
+              <button
+                class="export-btn"
+                title="通常メモを JSON ファイルに書き出す"
+              >
+                エクスポート
+              </button>
+              <button
+                class="import-btn"
+                title="JSON ファイルからメモを追加する"
+              >
+                インポート
+              </button>
+              <button
+                class="delete-all-btn"
+                title="通常メモをすべて削除する（シークレットメモは残る）"
+              >
+                全メモ削除
+              </button>
+            </div>
+          </section>
+          <section class="settings-section">
+            <h2>自動保存</h2>
+            <label class="settings-row">
+              <input type="checkbox" class="auto-save-input" />
+              入力が止まったら自動で保存する
+            </label>
+            <label class="settings-row">
+              保存までの時間
+              <select class="auto-save-delay-input">
+                <option value="500">0.5秒</option>
+                <option value="1000">1秒</option>
+                <option value="2000">2秒</option>
+                <option value="3000">3秒</option>
+                <option value="5000">5秒</option>
+              </select>
+            </label>
+          </section>
+          <section class="settings-section">
+            <h2>表示</h2>
+            <label class="settings-row">
+              文字サイズ
+              <select class="font-size-input">
+                <option value="12">12px</option>
+                <option value="14">14px</option>
+                <option value="16">16px</option>
+                <option value="18">18px</option>
+                <option value="20">20px</option>
+                <option value="24">24px</option>
+              </select>
+            </label>
+            <label class="settings-row">
+              テーマ
+              <select class="theme-input">
+                <option value="light">ライト</option>
+                <option value="dark">ダーク</option>
+              </select>
+            </label>
+          </section>
+        </div>
         <div class="main-header">
           <button
             class="sidebar-toggle sidebar-open"

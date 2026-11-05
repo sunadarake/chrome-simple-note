@@ -360,33 +360,182 @@ describe('ツールチップ', () => {
   });
 });
 
-describe('サイドバーのメニュー', () => {
-  it('「☰」で開閉する', () => {
+describe('設定パネル', () => {
+  const panelHidden = () => q('.settings-panel').hidden;
+  const change = (selector, value) => {
+    const input = q(selector);
+    if (input.type === 'checkbox') input.checked = value;
+    else input.value = value;
+    input.dispatchEvent(new Event('change'));
+  };
+  const settingsOf = (storage) => JSON.parse(storage.data.settings);
+
+  it('歯車で開閉し、開いている間はタイトル行とエディタを隠す', () => {
     start();
-    expect(q('.sidebar-menu').hidden).toBe(true);
-    q('.sidebar-menu-btn').click();
-    expect(q('.sidebar-menu').hidden).toBe(false);
-    expect(q('.sidebar-menu-btn').getAttribute('aria-expanded')).toBe('true');
-    q('.sidebar-menu-btn').click();
-    expect(q('.sidebar-menu').hidden).toBe(true);
+    expect(panelHidden()).toBe(true);
+    q('.settings-btn').click();
+    expect(panelHidden()).toBe(false);
+    expect(q('.settings-btn').getAttribute('aria-expanded')).toBe('true');
+    expect(q('.main-header').hidden).toBe(true);
+    expect(q('.editor').hidden).toBe(true);
+    q('.settings-btn').click();
+    expect(panelHidden()).toBe(true);
+    expect(q('.main-header').hidden).toBe(false);
+    expect(q('.editor').hidden).toBe(false);
   });
 
-  it('項目を選ぶと閉じる', () => {
+  it('「閉じる」ボタンで閉じる', () => {
     start();
-    q('.sidebar-menu-btn').click();
-    q('.export-btn').click();
-    expect(q('.sidebar-menu').hidden).toBe(true);
-    q('.sidebar-menu-btn').click();
-    q('.import-btn').click();
-    expect(q('.sidebar-menu').hidden).toBe(true);
+    q('.settings-btn').click();
+    q('.settings-close-btn').click();
+    expect(panelHidden()).toBe(true);
+    expect(q('.editor').hidden).toBe(false);
   });
 
-  it('メニューの外をクリックすると閉じる', () => {
+  it('保存値がなければ既定値を表示する', () => {
     start();
-    q('.sidebar-menu-btn').click();
-    q('.search-input').click();
-    expect(q('.sidebar-menu').hidden).toBe(true);
-    expect(q('.sidebar-menu-btn').getAttribute('aria-expanded')).toBe('false');
+    expect(q('.auto-save-input').checked).toBe(true);
+    expect(q('.auto-save-delay-input').value).toBe('1000');
+    expect(q('.font-size-input').value).toBe('16');
+    expect(q('.theme-input').value).toBe('light');
+    expect(q('.container').dataset.theme).toBe('light');
+  });
+
+  it('変更した設定を保存し、再起動しても保たれる', () => {
+    const storage = start();
+    change('.auto-save-delay-input', '3000');
+    change('.font-size-input', '20');
+    change('.theme-input', 'dark');
+    expect(settingsOf(storage)).toEqual({
+      autoSave: true,
+      autoSaveDelayMs: 3000,
+      fontSize: 20,
+      theme: 'dark',
+    });
+    document.body.innerHTML = body;
+    initMemoApp({
+      root: document,
+      storage,
+      sessionStorage: storage.session,
+      confirm: () => true,
+      copy: () => {},
+      download: () => {},
+    });
+    expect(q('.auto-save-delay-input').value).toBe('3000');
+    expect(q('.font-size-input').value).toBe('20');
+    expect(q('.container').dataset.theme).toBe('dark');
+  });
+
+  describe('自動保存', () => {
+    it('オフにすると入力しても保存しないが、保存ボタンでは保存する', () => {
+      const storage = start({ memos: [memo(1, 'old')] });
+      change('.auto-save-input', false);
+      expect(q('.auto-save-delay-input').disabled).toBe(true);
+      typeContent('typed');
+      vi.advanceTimersByTime(10000);
+      expect(stored(storage)[0].content).toBe('old');
+      q('.save-btn').click();
+      expect(stored(storage)[0].content).toBe('typed');
+    });
+
+    it('入力後にオフにすると、待っていた自動保存も止まる', () => {
+      const storage = start({ memos: [memo(1, 'old')] });
+      typeContent('typed');
+      change('.auto-save-input', false);
+      vi.advanceTimersByTime(10000);
+      expect(stored(storage)[0].content).toBe('old');
+    });
+
+    it('オンに戻すと自動保存が再開する', () => {
+      const storage = start({ memos: [memo(1, 'old')] });
+      change('.auto-save-input', false);
+      change('.auto-save-input', true);
+      expect(q('.auto-save-delay-input').disabled).toBe(false);
+      typeContent('typed');
+      vi.advanceTimersByTime(1000);
+      expect(stored(storage)[0].content).toBe('typed');
+    });
+
+    it('保存までの時間を変えられる', () => {
+      const storage = start({ memos: [memo(1, 'old')] });
+      change('.auto-save-delay-input', '3000');
+      typeContent('typed');
+      vi.advanceTimersByTime(2999);
+      expect(stored(storage)[0].content).toBe('old');
+      vi.advanceTimersByTime(1);
+      expect(stored(storage)[0].content).toBe('typed');
+    });
+  });
+
+  it('文字サイズを変えると変数に入り、表示層も作り直す', () => {
+    start({ memos: [memo(1, '# a')] });
+    change('.font-size-input', '24');
+    expect(q('.container').style.getPropertyValue('--editor-font-size')).toBe(
+      '24px',
+    );
+    expect(q('.editor-highlight').innerHTML).toBe(
+      '<span class="md-heading"># a</span>',
+    );
+  });
+
+  it('壊れた保存値は既定値で動く', () => {
+    const storage = fakeStorage([memo(1, 'a')]);
+    storage.data.settings = '{broken';
+    initMemoApp({
+      root: document,
+      storage,
+      sessionStorage: fakeStorage(),
+      confirm: () => true,
+      copy: () => {},
+      download: () => {},
+    });
+    expect(q('.font-size-input').value).toBe('16');
+  });
+
+  describe('全メモ削除', () => {
+    it('確認でキャンセルしたら削除しない', () => {
+      const storage = start({
+        memos: [memo(2, 'a'), memo(1, 'b')],
+        confirm: () => false,
+      });
+      q('.delete-all-btn').click();
+      expect(stored(storage)).toHaveLength(2);
+    });
+
+    it('承諾したら通常メモをすべて消し、シークレットメモは残す', () => {
+      const confirm = vi.fn(() => true);
+      const storage = start({
+        memos: [memo(2, 'a'), memo(1, 'b')],
+        confirm,
+      });
+      q('.secret-memo-btn').click();
+      typeContent('secret');
+      q('.save-btn').click();
+      q('.delete-all-btn').click();
+      expect(confirm).toHaveBeenCalledWith(
+        '通常メモ2件をすべて削除します（シークレットメモは残ります）。よろしいですか？',
+      );
+      expect(stored(storage)).toEqual([]);
+      expect(JSON.parse(storage.session.data.memos)).toHaveLength(1);
+      expect(items().map((i) => i.textContent)).toEqual(['🔒 secret']);
+      expect(q('.log-message').dataset.kind).toBe('delete');
+    });
+
+    it('すべて消えたら新しい空のメモを作る', () => {
+      const storage = start({ memos: [memo(1, 'a')] });
+      q('.delete-all-btn').click();
+      expect(stored(storage)).toEqual([]);
+      expect(items().map((i) => i.textContent)).toEqual(['無題のメモ']);
+      expect(q('.content-input').value).toBe('');
+    });
+
+    it('通常メモがなければ確認せずメッセージを出す', () => {
+      const confirm = vi.fn(() => true);
+      start({ confirm });
+      q('.delete-all-btn').click();
+      expect(confirm).not.toHaveBeenCalled();
+      expect(q('.log-message').textContent).toBe('削除するメモがありません');
+    });
   });
 });
 

@@ -7,9 +7,9 @@ import {
   titleOf,
   updateContent,
 } from './memo-store.js';
+import { loadSettings, saveSettings } from './settings.js';
 import { loadMemos, saveMemos } from './storage.js';
 
-const AUTO_SAVE_DELAY_MS = 1000;
 const LOG_DISPLAY_MS = 3000;
 
 /**
@@ -50,13 +50,29 @@ export function initMemoApp({
   const saveBtn = query('.save-btn');
   const deleteBtn = query('.delete-btn');
   const logMessage = /** @type {HTMLElement} */ (query('.log-message'));
-  const menuBtn = query('.sidebar-menu-btn');
-  const menu = /** @type {HTMLElement} */ (query('.sidebar-menu'));
+  const container = /** @type {HTMLElement} */ (query('.container'));
+  const mainHeader = /** @type {HTMLElement} */ (query('.main-header'));
+  const editor = /** @type {HTMLElement} */ (query('.editor'));
+  const settingsBtn = query('.settings-btn');
+  const settingsPanel = /** @type {HTMLElement} */ (query('.settings-panel'));
+  const settingsCloseBtn = query('.settings-close-btn');
   const exportBtn = query('.export-btn');
   const importBtn = query('.import-btn');
+  const deleteAllBtn = query('.delete-all-btn');
   const importInput = /** @type {HTMLInputElement} */ (query('.import-input'));
+  const autoSaveInput = /** @type {HTMLInputElement} */ (
+    query('.auto-save-input')
+  );
+  const autoSaveDelayInput = /** @type {HTMLSelectElement} */ (
+    query('.auto-save-delay-input')
+  );
+  const fontSizeInput = /** @type {HTMLSelectElement} */ (
+    query('.font-size-input')
+  );
+  const themeInput = /** @type {HTMLSelectElement} */ (query('.theme-input'));
 
   let memos = loadMemos(storage, sessionStorage);
+  const settings = loadSettings(storage);
   /** @type {number | null} */
   let currentId = null;
   let lastContent = '';
@@ -168,10 +184,38 @@ export function initMemoApp({
     showLogMessage('メモを削除しました', 'delete');
   }
 
+  function deleteAllMemos() {
+    // 書き始める前の空メモは保存されていないので、件数に数えない
+    const count = memos.filter(
+      (memo) => !memo.secret && memo.content.trim() !== '',
+    ).length;
+    if (count === 0) {
+      showLogMessage('削除するメモがありません');
+      return;
+    }
+    if (
+      !confirm(
+        `通常メモ${count}件をすべて削除します（シークレットメモは残ります）。よろしいですか？`,
+      )
+    ) {
+      return;
+    }
+    memos = memos.filter((memo) => memo.secret);
+    saveMemos(storage, sessionStorage, memos);
+    currentId = null;
+    if (memos.length > 0) {
+      loadMemo(memos[0].id);
+    } else {
+      createNewMemo(false);
+    }
+    showLogMessage(`${count}件のメモを削除しました`, 'delete');
+  }
+
   function handleContentInput() {
     updateHighlight();
     updateTitleDisplay(contentInput.value);
     clearTimeout(autoSaveTimer);
+    if (!settings.autoSave) return;
     autoSaveTimer = setTimeout(() => {
       // 空白のみのメモは保存しない
       if (
@@ -181,7 +225,7 @@ export function initMemoApp({
       ) {
         persistCurrentContent();
       }
-    }, AUTO_SAVE_DELAY_MS);
+    }, settings.autoSaveDelayMs);
   }
 
   function copyContent() {
@@ -202,10 +246,41 @@ export function initMemoApp({
     showLogMessage(`${count}件をエクスポートしました`);
   }
 
-  /** @param {boolean} open */
-  function setMenuOpen(open) {
-    menu.hidden = !open;
-    menuBtn.setAttribute('aria-expanded', String(open));
+  /**
+   * 設定を開いている間は、メモのタイトル行とエディタを隠す
+   * @param {boolean} open
+   */
+  function setSettingsOpen(open) {
+    settingsPanel.hidden = !open;
+    mainHeader.hidden = open;
+    editor.hidden = open;
+    settingsBtn.setAttribute('aria-expanded', String(open));
+  }
+
+  function applySettings() {
+    container.dataset.theme = settings.theme;
+    container.style.setProperty('--editor-font-size', `${settings.fontSize}px`);
+    autoSaveDelayInput.disabled = !settings.autoSave;
+    // 文字サイズが変わると折り返しも変わるので、表示層を作り直す
+    updateHighlight();
+  }
+
+  function showSettings() {
+    autoSaveInput.checked = settings.autoSave;
+    autoSaveDelayInput.value = String(settings.autoSaveDelayMs);
+    fontSizeInput.value = String(settings.fontSize);
+    themeInput.value = settings.theme;
+    applySettings();
+  }
+
+  function changeSettings() {
+    settings.autoSave = autoSaveInput.checked;
+    settings.autoSaveDelayMs = Number(autoSaveDelayInput.value);
+    settings.fontSize = Number(fontSizeInput.value);
+    settings.theme = themeInput.value === 'dark' ? 'dark' : 'light';
+    if (!settings.autoSave) clearTimeout(autoSaveTimer);
+    saveSettings(storage, settings);
+    applySettings();
   }
 
   async function importFromFile() {
@@ -237,23 +312,24 @@ export function initMemoApp({
   copyBtn.addEventListener('click', copyContent);
   saveBtn.addEventListener('click', saveMemo);
   deleteBtn.addEventListener('click', deleteMemo);
-  menuBtn.addEventListener('click', () => setMenuOpen(menu.hidden === true));
-  root.addEventListener('click', (event) => {
-    const target = /** @type {Node} */ (event.target);
-    if (!menu.contains(target) && !menuBtn.contains(target)) {
-      setMenuOpen(false);
-    }
-  });
-  exportBtn.addEventListener('click', () => {
-    setMenuOpen(false);
-    exportToFile();
-  });
-  importBtn.addEventListener('click', () => {
-    setMenuOpen(false);
-    importInput.click();
-  });
+  settingsBtn.addEventListener('click', () =>
+    setSettingsOpen(settingsPanel.hidden === true),
+  );
+  settingsCloseBtn.addEventListener('click', () => setSettingsOpen(false));
+  for (const input of [
+    autoSaveInput,
+    autoSaveDelayInput,
+    fontSizeInput,
+    themeInput,
+  ]) {
+    input.addEventListener('change', changeSettings);
+  }
+  exportBtn.addEventListener('click', exportToFile);
+  importBtn.addEventListener('click', () => importInput.click());
+  deleteAllBtn.addEventListener('click', deleteAllMemos);
   importInput.addEventListener('change', importFromFile);
 
+  showSettings();
   if (memos.length > 0) {
     loadMemo(memos[0].id);
   } else {

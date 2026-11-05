@@ -123,48 +123,6 @@ body {
   flex: 1;
 }
 
-.sidebar-menu-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.sidebar-menu {
-  position: absolute;
-  top: 0;
-  left: 100%;
-  margin-left: 6px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 6px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: white;
-}
-
-.sidebar-menu[hidden] {
-  display: none;
-}
-
-.export-btn,
-.import-btn {
-  padding: 8px 12px;
-  white-space: nowrap;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: #333;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.export-btn:hover,
-.import-btn:hover {
-  background: #eee;
-}
-
 .memo-item {
   padding: 12px 15px;
   margin-bottom: 4px;
@@ -230,7 +188,7 @@ body {
 }
 
 /* サイドバーの中のボタン */
-.sidebar-menu-btn {
+.settings-btn {
   flex-shrink: 0;
   padding: 6px 10px;
   border-radius: 6px;
@@ -240,14 +198,14 @@ body {
 }
 
 .sidebar-close,
-.sidebar-menu-btn {
+.settings-btn {
   border: none;
   background: transparent;
   color: #333;
 }
 
 .sidebar-close:hover,
-.sidebar-menu-btn:hover {
+.settings-btn:hover {
   background: #eee;
 }
 
@@ -270,6 +228,90 @@ body {
 .container.sidebar-collapsed .sidebar,
 .container.sidebar-collapsed .sidebar-resizer {
   display: none;
+}
+
+/* 設定パネル。開いている間はタイトル行とエディタの代わりに出る */
+.main-header[hidden],
+.editor[hidden],
+.settings-panel[hidden] {
+  display: none;
+}
+
+.settings-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 6px;
+}
+
+.settings-title {
+  flex: 1;
+  font-size: 24px;
+  font-weight: 500;
+  padding: 6px 0;
+  min-height: 40px;
+}
+
+.settings-section {
+  padding: 12px 6px;
+  border-bottom: 1px solid #eee;
+}
+
+.settings-section h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.settings-close-btn,
+.export-btn,
+.import-btn,
+.delete-all-btn,
+.settings-panel select {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: transparent;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.settings-close-btn:hover,
+.export-btn:hover,
+.import-btn:hover {
+  background: #eee;
+}
+
+.delete-all-btn {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.delete-all-btn:hover {
+  background: #fdedec;
+}
+
+.settings-panel select:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .title-display {
@@ -307,7 +349,7 @@ body {
   border-radius: 7px;
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-  font-size: 16px;
+  font-size: var(--editor-font-size, 16px);
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: break-word;
@@ -395,7 +437,8 @@ body {
   background: #2b2d31;
 }
 
-.main-content.secret .title-display {
+.main-content.secret .title-display,
+.container[data-theme='dark'] .main-content:not(.secret) .title-display {
   color: #ecf0f1;
 }
 
@@ -403,13 +446,15 @@ body {
   border-bottom-color: #4a4d52;
 }
 
-.main-content.secret .sidebar-open {
+.main-content.secret .sidebar-open,
+.container[data-theme='dark'] .main-content:not(.secret) .sidebar-open {
   background: #1e1f22;
   border-color: #4a4d52;
   color: #ecf0f1;
 }
 
-.main-content.secret .sidebar-open:hover {
+.main-content.secret .sidebar-open:hover,
+.container[data-theme='dark'] .main-content:not(.secret) .sidebar-open:hover {
   background: #2f3136;
 }
 
@@ -422,49 +467,63 @@ body {
   border-color: #95a5a6;
 }
 
-.main-content.secret .editor-highlight {
+.main-content.secret .editor-highlight,
+.container[data-theme='dark'] .main-content:not(.secret) .editor-highlight {
   color: #e8eaed;
 }
 
-.main-content.secret .content-input {
+.main-content.secret .content-input,
+.container[data-theme='dark'] .main-content:not(.secret) .content-input {
   caret-color: #e8eaed;
 }
 
-.main-content.secret .content-input::placeholder {
+.main-content.secret .content-input::placeholder,
+.container[data-theme='dark']
+  .main-content:not(.secret)
+  .content-input::placeholder {
   color: #888;
 }
 
 .main-content.secret .md-heading,
-.main-content.secret .md-link {
+.container[data-theme='dark'] .main-content:not(.secret) .md-heading,
+.main-content.secret .md-link,
+.container[data-theme='dark'] .main-content:not(.secret) .md-link {
   color: #8ab4f8;
 }
 
-.main-content.secret .md-quote {
+.main-content.secret .md-quote,
+.container[data-theme='dark'] .main-content:not(.secret) .md-quote {
   color: #9aa0a6;
 }
 
-.main-content.secret .md-list {
+.main-content.secret .md-list,
+.container[data-theme='dark'] .main-content:not(.secret) .md-list {
   color: #fdd663;
 }
 
-.main-content.secret .md-hr {
+.main-content.secret .md-hr,
+.container[data-theme='dark'] .main-content:not(.secret) .md-hr {
   color: #7f8c8d;
 }
 
-.main-content.secret .md-code {
+.main-content.secret .md-code,
+.container[data-theme='dark'] .main-content:not(.secret) .md-code {
   color: #f28b82;
   background: rgba(255, 255, 255, 0.08);
 }
 
-.main-content.secret .md-codeblock {
+.main-content.secret .md-codeblock,
+.container[data-theme='dark'] .main-content:not(.secret) .md-codeblock {
   color: #c58af9;
 }
 
-.main-content.secret .md-bold {
+.main-content.secret .md-bold,
+.container[data-theme='dark'] .main-content:not(.secret) .md-bold {
   color: #f9a875;
 }
 
-.main-content.secret .md-italic {
+.main-content.secret .md-italic,
+.container[data-theme='dark'] .main-content:not(.secret) .md-italic {
   color: #81c995;
 }
 
@@ -562,4 +621,138 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #bbb;
+}
+
+/* ダークテーマ（通常メモ）。シークレットメモは上の .main-content.secret の配色を使う */
+body:has(.container[data-theme='dark']) {
+  background: #1a1a1a;
+}
+
+.container[data-theme='dark'] {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.container[data-theme='dark'] .sidebar {
+  background: #202124;
+  border-right-color: #3a3a3a;
+  color: #e0e0e0;
+}
+
+.container[data-theme='dark'] .sidebar-header {
+  border-bottom-color: #3a3a3a;
+}
+
+.container[data-theme='dark'] .sidebar-title,
+.container[data-theme='dark'] .sidebar-close,
+.container[data-theme='dark'] .settings-btn {
+  color: #e0e0e0;
+}
+
+.container[data-theme='dark'] .sidebar-close:hover,
+.container[data-theme='dark'] .settings-btn:hover,
+.container[data-theme='dark'] .memo-item:hover,
+.container[data-theme='dark'] .memo-item.active {
+  background: #333;
+}
+
+.container[data-theme='dark'] .memo-item.secret {
+  background: #2b2d31;
+}
+
+.container[data-theme='dark'] .memo-item.secret:hover,
+.container[data-theme='dark'] .memo-item.secret.active {
+  background: #3a3d42;
+}
+
+.container[data-theme='dark'] .search-input {
+  color: #e0e0e0;
+  border-bottom-color: #555;
+}
+
+.container[data-theme='dark'] .search-input:focus {
+  border-bottom-color: #ccc;
+}
+
+.container[data-theme='dark'] .main-content:not(.secret) {
+  background: #1a1a1a;
+}
+
+.container[data-theme='dark'] .main-content:not(.secret) .main-header {
+  border-bottom-color: #3a3a3a;
+}
+
+.container[data-theme='dark'] .main-content:not(.secret) .editor {
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+}
+
+.container[data-theme='dark'] .main-content:not(.secret) .editor:focus-within {
+  border-color: #888;
+}
+
+.container[data-theme='dark'] .main-content:not(.secret) .content-input {
+  caret-color: #e8eaed;
+}
+
+.container[data-theme='dark'] .main-content:not(.secret) .editor-highlight {
+  color: #e8eaed;
+}
+
+/* 設定パネルは、ダークテーマとシークレットメモで同じ配色にする */
+.container[data-theme='dark'] .settings-header,
+.container[data-theme='dark'] .settings-section,
+.main-content.secret .settings-header,
+.main-content.secret .settings-section {
+  border-bottom-color: #4a4d52;
+}
+
+.container[data-theme='dark'] .settings-title,
+.main-content.secret .settings-title {
+  color: #ecf0f1;
+}
+
+.container[data-theme='dark'] .settings-section,
+.main-content.secret .settings-section {
+  color: #e0e0e0;
+}
+
+.container[data-theme='dark'] .settings-section h2,
+.main-content.secret .settings-section h2 {
+  color: #9aa0a6;
+}
+
+.container[data-theme='dark'] .settings-close-btn,
+.container[data-theme='dark'] .export-btn,
+.container[data-theme='dark'] .import-btn,
+.container[data-theme='dark'] .settings-panel select,
+.main-content.secret .settings-close-btn,
+.main-content.secret .export-btn,
+.main-content.secret .import-btn,
+.main-content.secret .settings-panel select {
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.container[data-theme='dark'] .settings-close-btn:hover,
+.container[data-theme='dark'] .export-btn:hover,
+.container[data-theme='dark'] .import-btn:hover,
+.main-content.secret .settings-close-btn:hover,
+.main-content.secret .export-btn:hover,
+.main-content.secret .import-btn:hover {
+  background: #3a3d42;
+}
+
+.container[data-theme='dark'] .delete-all-btn:hover,
+.main-content.secret .delete-all-btn:hover {
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.container[data-theme='dark'] .settings-panel select option,
+.main-content.secret .settings-panel select option {
+  background: #2b2d31;
+}
+
+.container[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #555;
 }
