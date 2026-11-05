@@ -486,6 +486,22 @@ body {
   opacity: 1;
 }
 
+/* 操作ボタンと同じ色にそろえる */
+.log-message[data-kind='save'] {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.log-message[data-kind='delete'] {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.log-message[data-kind='copy'] {
+  background-color: #3498db;
+  color: white;
+}
+
 .copy-btn,
 .save-btn,
 .delete-btn {

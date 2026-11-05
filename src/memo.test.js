@@ -282,6 +282,24 @@ describe('マークダウンのハイライト', () => {
   });
 });
 
+describe('ログの色分け', () => {
+  it('保存・コピー・削除でそれぞれ種類が付く', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.save-btn').click();
+    expect(q('.log-message').dataset.kind).toBe('save');
+    q('.copy-btn').click();
+    expect(q('.log-message').dataset.kind).toBe('copy');
+    q('.delete-btn').click();
+    expect(q('.log-message').dataset.kind).toBe('delete');
+  });
+
+  it('エクスポートは色分けしない', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.export-btn').click();
+    expect(q('.log-message').dataset.kind).toBe('');
+  });
+});
+
 describe('ツールチップ', () => {
   it('メモ一覧の項目に本文の1行目だけを出す', () => {
     start({ memos: [memo(1, `${'a'.repeat(150)}\n2行目`)] });

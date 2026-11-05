@@ -49,7 +49,7 @@ export function initMemoApp({
   const copyBtn = query('.copy-btn');
   const saveBtn = query('.save-btn');
   const deleteBtn = query('.delete-btn');
-  const logMessage = query('.log-message');
+  const logMessage = /** @type {HTMLElement} */ (query('.log-message'));
   const menuBtn = query('.sidebar-menu-btn');
   const menu = /** @type {HTMLElement} */ (query('.sidebar-menu'));
   const exportBtn = query('.export-btn');
@@ -109,10 +109,14 @@ export function initMemoApp({
     titleDisplay.textContent = titleOf(content) || '新しいメモ';
   }
 
-  /** @param {string} message */
-  function showLogMessage(message) {
+  /**
+   * @param {string} message
+   * @param {'save' | 'delete' | 'copy'} [kind] 色分け用。なければ灰色
+   */
+  function showLogMessage(message, kind) {
     clearTimeout(logTimer);
     logMessage.textContent = message;
+    logMessage.dataset.kind = kind ?? '';
     logMessage.classList.add('show');
     logTimer = setTimeout(() => {
       logMessage.classList.remove('show');
@@ -138,7 +142,7 @@ export function initMemoApp({
   function saveMemo() {
     if (currentId === null) return;
     persistCurrentContent();
-    showLogMessage('メモを保存しました');
+    showLogMessage('メモを保存しました', 'save');
   }
 
   function deleteMemo() {
@@ -157,7 +161,7 @@ export function initMemoApp({
     } else {
       createNewMemo(false);
     }
-    showLogMessage('メモを削除しました');
+    showLogMessage('メモを削除しました', 'delete');
   }
 
   function handleContentInput() {
@@ -172,7 +176,7 @@ export function initMemoApp({
         contentInput.value.trim() !== ''
       ) {
         persistCurrentContent();
-        showLogMessage('メモを自動保存しました');
+        showLogMessage('メモを自動保存しました', 'save');
       }
     }, AUTO_SAVE_DELAY_MS);
   }
@@ -180,7 +184,7 @@ export function initMemoApp({
   function copyContent() {
     contentInput.select();
     copy();
-    showLogMessage('コンテンツをコピーしました');
+    showLogMessage('コンテンツをコピーしました', 'copy');
   }
 
   function exportToFile() {
