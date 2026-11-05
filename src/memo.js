@@ -127,7 +127,6 @@ export function initMemoApp({
   function createNewMemo(secret) {
     const newMemo = createMemo(new Date(), secret);
     memos = [newMemo, ...memos];
-    saveMemos(storage, sessionStorage, memos);
     loadMemo(newMemo.id);
   }
 
@@ -141,6 +140,11 @@ export function initMemoApp({
 
   function saveMemo() {
     if (currentId === null) return;
+    // 空白のみを反映すると、保存済みのメモがリロードで消える
+    if (contentInput.value.trim() === '') {
+      showLogMessage('内容が空のため保存しませんでした');
+      return;
+    }
     persistCurrentContent();
     showLogMessage('メモを保存しました', 'save');
   }

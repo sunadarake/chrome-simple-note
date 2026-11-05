@@ -13,12 +13,14 @@ export function loadMemos(local, session) {
 }
 
 /**
- * シークレットメモは local に書かない
+ * シークレットメモは local に書かない。何も書いていない（空白のみを含む）メモは
+ * 書き始める前の新規メモなので、どちらにも書かない
  * @param {Pick<Storage, 'setItem'>} local
  * @param {Pick<Storage, 'setItem'>} session
  * @param {import('./memo-store.js').Memo[]} memos
  */
 export function saveMemos(local, session, memos) {
-  local.setItem(KEY, JSON.stringify(memos.filter((memo) => !memo.secret)));
-  session.setItem(KEY, JSON.stringify(memos.filter((memo) => memo.secret)));
+  const written = memos.filter((memo) => memo.content.trim() !== '');
+  local.setItem(KEY, JSON.stringify(written.filter((memo) => !memo.secret)));
+  session.setItem(KEY, JSON.stringify(written.filter((memo) => memo.secret)));
 }

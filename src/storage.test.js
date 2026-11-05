@@ -33,6 +33,20 @@ describe('storage', () => {
     expect(JSON.parse(session.data.memos)).toEqual([memo(2, true)]);
   });
 
+  it('何も書いていない（空白のみを含む）メモは書かない', () => {
+    const local = fakeStorage();
+    const session = fakeStorage();
+    const blank = (id, secret, content) => ({ ...memo(id, secret), content });
+    saveMemos(local, session, [
+      blank(4, true, ''),
+      blank(3, false, ' \n\t'),
+      memo(2, true),
+      memo(1, false),
+    ]);
+    expect(JSON.parse(local.data.memos)).toEqual([memo(1, false)]);
+    expect(JSON.parse(session.data.memos)).toEqual([memo(2, true)]);
+  });
+
   it('保存したメモを新しい順で読み込める', () => {
     const local = fakeStorage();
     const session = fakeStorage();

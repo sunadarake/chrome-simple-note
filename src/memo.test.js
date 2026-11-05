@@ -59,11 +59,11 @@ afterEach(() => {
 });
 
 describe('初期表示', () => {
-  it('メモがなければ新規メモを作って保存する', () => {
+  it('メモがなければ新規メモを作る（何も書くまでは保存しない）', () => {
     const storage = start();
     expect(items()).toHaveLength(1);
     expect(items()[0].textContent).toBe('無題のメモ');
-    expect(stored(storage)).toHaveLength(1);
+    expect(storage.data.memos).toBeUndefined();
   });
 
   it('メモがあれば先頭のメモを表示する', () => {
@@ -102,6 +102,16 @@ describe('保存', () => {
     expect(stored(storage)[0].content).toBe('old');
   });
 
+  it('空白のみの内容で保存ボタンを押しても保存しない', () => {
+    const storage = start({ memos: [memo(1, 'old')] });
+    q('.content-input').value = ' \n\t';
+    q('.save-btn').click();
+    expect(stored(storage)[0].content).toBe('old');
+    expect(q('.log-message').textContent).toBe(
+      '内容が空のため保存しませんでした',
+    );
+  });
+
   it('入力中にタイトル表示を更新する', () => {
     start({ memos: [memo(1, 'old')] });
     typeContent('あ'.repeat(25));
@@ -133,17 +143,53 @@ describe('削除', () => {
   it('最後の1件を削除したら新規メモを作る', () => {
     const storage = start({ memos: [memo(1, 'a')] });
     q('.delete-btn').click();
-    expect(stored(storage)).toHaveLength(1);
-    expect(stored(storage)[0].content).toBe('');
+    expect(stored(storage)).toEqual([]);
+    expect(items()).toHaveLength(1);
+    expect(q('.content-input').value).toBe('');
   });
 });
 
 describe('一覧と検索', () => {
   it('新しいメモは先頭に追加される', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.new-memo-btn').click();
+    expect(items()).toHaveLength(2);
+    expect(items()[0].classList.contains('active')).toBe(true);
+  });
+
+  it('何も書かない新しいメモは保存先に書かない', () => {
     const storage = start({ memos: [memo(1, 'a')] });
     q('.new-memo-btn').click();
+    expect(stored(storage)).toHaveLength(1);
+    typeContent('  \n');
+    vi.advanceTimersByTime(1000);
+    expect(stored(storage)).toHaveLength(1);
+  });
+
+  it('空の新しいメモがあっても、削除で一緒に書かない', () => {
+    const storage = start({ memos: [memo(2, 'b'), memo(1, 'a')] });
+    q('.new-memo-btn').click();
+    items()[1].click();
+    q('.delete-btn').click();
+    expect(stored(storage).map((m) => m.id)).toEqual([1]);
+  });
+
+  it('新しいメモに書くと保存され、再起動しても残る', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    q('.new-memo-btn').click();
+    typeContent('hello');
+    vi.advanceTimersByTime(1000);
     expect(stored(storage)).toHaveLength(2);
-    expect(items()[0].classList.contains('active')).toBe(true);
+    document.body.innerHTML = body;
+    initMemoApp({
+      root: document,
+      storage,
+      sessionStorage: storage.session,
+      confirm: () => true,
+      copy: () => {},
+      download: () => {},
+    });
+    expect(items().map((i) => i.textContent)).toEqual(['hello', 'a']);
   });
 
   it('一覧のメモをクリックするとそのメモを表示する', () => {
@@ -179,18 +225,25 @@ describe('コピー', () => {
 });
 
 describe('シークレットメモ', () => {
-  const sessionStored = (storage) => JSON.parse(storage.session.data.memos);
+  const sessionStored = (storage) =>
+    JSON.parse(storage.session.data.memos ?? 'null');
   const createSecret = () => q('.secret-memo-btn').click();
 
   it('ボタンで作ると sessionStorage にだけ保存され、一覧に鍵付きで出る', () => {
     const storage = start({ memos: [memo(1, 'a')] });
     createSecret();
-    expect(sessionStored(storage)).toHaveLength(1);
-    expect(sessionStored(storage)[0].secret).toBe(true);
-    expect(stored(storage).every((m) => !m.secret)).toBe(true);
+    expect(sessionStored(storage)).toBeNull();
     expect(items()[0].textContent).toBe('🔒 無題のメモ');
     expect(items()[0].classList.contains('active')).toBe(true);
     expect(items()[1].textContent).toBe('a');
+  });
+
+  it('何も書かないシークレットメモは sessionStorage にも書かない', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    createSecret();
+    q('.save-btn').click();
+    expect(sessionStored(storage)).toBeNull();
+    expect(stored(storage).every((m) => !m.secret)).toBe(true);
   });
 
   it('保存と自動保存は sessionStorage にだけ書く', () => {
