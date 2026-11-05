@@ -464,15 +464,16 @@ body {
   color: #81c995;
 }
 
-/* 本文欄の大きさを変えないよう、エディタの下端に重ねて表示する */
+/* 画面の大きさを変えないよう、メイン画面の上余白（30px）に重ねて表示する */
 .log-message {
   position: absolute;
-  left: 15px;
-  right: 15px;
-  bottom: 15px;
+  top: 3px;
+  right: 30px;
   z-index: 1;
   pointer-events: none;
-  padding: 8px 15px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 12px;
   border-radius: 6px;
   background-color: #f2f2f2;
   color: #555;
