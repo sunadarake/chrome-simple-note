@@ -78,6 +78,8 @@ export function initMemoApp({
       }
       memoItem.textContent =
         (memo.secret ? '🔒 ' : '') + (memo.title || '無題のメモ');
+      // 一覧では先頭20文字しか見えないので、ツールチップで1行目を全部見せる
+      memoItem.title = memo.content.split('\n')[0];
       memoItem.addEventListener('click', () => loadMemo(memo.id));
       memoList.appendChild(memoItem);
     }

@@ -13,13 +13,24 @@
             <button
               class="sidebar-menu-btn"
               aria-label="メニュー"
+              title="エクスポート／インポート"
               aria-expanded="false"
             >
               ☰
             </button>
             <div class="sidebar-menu" hidden>
-              <button class="export-btn">エクスポート</button>
-              <button class="import-btn">インポート</button>
+              <button
+                class="export-btn"
+                title="通常メモを JSON ファイルに書き出す"
+              >
+                エクスポート
+              </button>
+              <button
+                class="import-btn"
+                title="JSON ファイルからメモを追加する"
+              >
+                インポート
+              </button>
             </div>
           </div>
           <div class="sidebar-title">SimpleNote</div>
@@ -32,13 +43,18 @@
           <button
             class="sidebar-toggle sidebar-close"
             aria-label="サイドバーを閉じる"
+            title="サイドバーを閉じる"
             aria-expanded="true"
           >
             «
           </button>
         </div>
-        <button class="new-memo-btn">＋ 新しいメモ</button>
-        <button class="secret-memo-btn">🔒 シークレットメモ</button>
+        <button class="new-memo-btn" title="新しいメモを作る">
+          ＋ 新しいメモ
+        </button>
+        <button class="secret-memo-btn" title="タブを閉じると消えるメモを作る">
+          🔒 シークレットメモ
+        </button>
         <input type="text" class="search-input" placeholder="メモを検索..." />
         <div class="memo-list">
           <!-- メモリストがここに表示されます -->
@@ -53,14 +69,15 @@
           <button
             class="sidebar-toggle sidebar-open"
             aria-label="サイドバーを開く"
+            title="サイドバーを開く"
             aria-expanded="true"
           >
             »
           </button>
           <div class="title-display">新しいメモ</div>
-          <button class="delete-btn">削除</button>
-          <button class="copy-btn">コピー</button>
-          <button class="save-btn">保存</button>
+          <button class="delete-btn" title="このメモを削除する">削除</button>
+          <button class="copy-btn" title="本文をコピーする">コピー</button>
+          <button class="save-btn" title="このメモを保存する">保存</button>
         </div>
         <div class="editor">
           <pre class="editor-highlight" aria-hidden="true"></pre>

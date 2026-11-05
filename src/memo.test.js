@@ -282,6 +282,13 @@ describe('マークダウンのハイライト', () => {
   });
 });
 
+describe('ツールチップ', () => {
+  it('メモ一覧の項目に本文の1行目だけを出す', () => {
+    start({ memos: [memo(1, `${'a'.repeat(150)}\n2行目`)] });
+    expect(items()[0].title).toBe('a'.repeat(150));
+  });
+});
+
 describe('サイドバーのメニュー', () => {
   it('「☰」で開閉する', () => {
     start();
