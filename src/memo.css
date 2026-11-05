@@ -125,6 +125,7 @@ body {
 
 .memo-list {
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
 }
 
