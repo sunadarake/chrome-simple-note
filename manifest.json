@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chrome-Simple-Memo",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "シンプルなマークダウンメモ帳",
   "action": {
     "default_title": "Simple Memo"
