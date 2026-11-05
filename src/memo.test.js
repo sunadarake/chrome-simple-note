@@ -92,7 +92,7 @@ describe('保存', () => {
     expect(stored(storage)[0].content).toBe('old');
     vi.advanceTimersByTime(1);
     expect(stored(storage)[0].content).toBe('typed');
-    expect(q('.log-message').textContent).toBe('メモを自動保存しました');
+    expect(q('.log-message').textContent).toBe('');
   });
 
   it('空白のみの内容は自動保存しない', () => {

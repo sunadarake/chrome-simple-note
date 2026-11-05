@@ -176,7 +176,6 @@ export function initMemoApp({
         contentInput.value.trim() !== ''
       ) {
         persistCurrentContent();
-        showLogMessage('メモを自動保存しました', 'save');
       }
     }, AUTO_SAVE_DELAY_MS);
   }
