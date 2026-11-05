@@ -464,17 +464,17 @@ body {
   color: #81c995;
 }
 
-/* 画面の大きさを変えないよう、メイン画面の上余白（30px）に重ねて表示する */
+/* 画面の大きさを変えないよう、メイン画面の上余白（30px）に横一列で重ねて表示する */
 .log-message {
   position: absolute;
-  top: 3px;
-  right: 30px;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1;
   pointer-events: none;
-  height: 24px;
-  line-height: 24px;
-  padding: 0 12px;
-  border-radius: 6px;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 30px;
   background-color: #f2f2f2;
   color: #555;
   opacity: 0;
