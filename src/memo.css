@@ -279,6 +279,7 @@ body {
 }
 
 .title-display {
+  flex: 1;
   font-size: 28px;
   font-weight: 600;
   padding: 15px 0;
@@ -290,7 +291,6 @@ body {
   position: relative;
   flex: 1;
   min-height: 0;
-  margin-bottom: 25px;
   border: 1px solid #e1e8ed;
   border-radius: 8px;
   background: white;
@@ -478,22 +478,14 @@ body {
   color: #81c995;
 }
 
-.main-content.secret .footer {
-  border-top-color: #4a4d52;
-}
-
-/* フッターのスタイル */
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 0;
-  border-top: 1px solid #eee;
-}
-
+/* 本文欄の大きさを変えないよう、エディタの下端に重ねて表示する */
 .log-message {
-  flex: 1;
-  margin-right: 15px;
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  bottom: 15px;
+  z-index: 1;
+  pointer-events: none;
   padding: 8px 15px;
   border-radius: 6px;
   background-color: #e3f2fd;
@@ -512,7 +504,6 @@ body {
 .save-btn,
 .delete-btn {
   padding: 10px 20px;
-  margin-left: 10px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
