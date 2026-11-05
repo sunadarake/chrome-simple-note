@@ -68,7 +68,7 @@ body {
   padding: 8px;
   background: #3498db;
   color: white;
-  border: 0;
+  border: 1px solid #3498db;
   text-align: left;
   border-radius: 6px;
   cursor: pointer;
@@ -79,6 +79,7 @@ body {
 
 .new-memo-btn:hover {
   background: #2980b9;
+  border-color: #2980b9;
 }
 
 .new-memo-btn {
@@ -87,10 +88,12 @@ body {
 
 .secret-memo-btn {
   background: #2b2d31;
+  border-color: #2b2d31;
 }
 
 .secret-memo-btn:hover {
   background: #1e1f22;
+  border-color: #1e1f22;
 }
 
 .search-input {
@@ -475,6 +478,7 @@ body {
   height: 30px;
   line-height: 30px;
   padding: 0 30px;
+  border: 1px solid #ddd;
   background-color: #f2f2f2;
   color: #555;
   opacity: 0;
@@ -486,56 +490,59 @@ body {
   opacity: 1;
 }
 
-/* 操作ボタンと同じ色にそろえる */
+/* 操作ボタンと同じ色の文字と枠にする */
 .log-message[data-kind='save'] {
-  background-color: #2ecc71;
-  color: white;
+  border-color: #27ae60;
+  background-color: #eafaf1;
+  color: #27ae60;
 }
 
 .log-message[data-kind='delete'] {
-  background-color: #e74c3c;
-  color: white;
+  border-color: #e74c3c;
+  background-color: #fdedec;
+  color: #e74c3c;
 }
 
 .log-message[data-kind='copy'] {
-  background-color: #3498db;
-  color: white;
+  border-color: #2980b9;
+  background-color: #eaf4fb;
+  color: #2980b9;
 }
 
 .copy-btn,
 .save-btn,
 .delete-btn {
   padding: 8px 16px;
-  border: 0;
+  border: 1px solid;
   border-radius: 6px;
-  color: white;
+  background: transparent;
   cursor: pointer;
   font-size: 15px;
   transition: background 0.2s ease;
 }
 
 .delete-btn {
-  background: #e74c3c;
+  color: #e74c3c;
 }
 
 .delete-btn:hover {
-  background: #c0392b;
+  background: #fdedec;
 }
 
 .save-btn {
-  background: #2ecc71;
+  color: #27ae60;
 }
 
 .save-btn:hover {
-  background: #27ae60;
+  background: #eafaf1;
 }
 
 .copy-btn {
-  background: #3498db;
+  color: #2980b9;
 }
 
 .copy-btn:hover {
-  background: #2980b9;
+  background: #eaf4fb;
 }
 
 /* スクロールバーのスタイル */
