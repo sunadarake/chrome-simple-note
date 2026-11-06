@@ -13,6 +13,29 @@ const escapeHtml = (text) =>
 const wrap = (className, text) =>
   `<span class="md-${className}">${escapeHtml(text)}</span>`;
 
+// 言語指定は見ずに、主要な言語に共通する記法だけを色付けする
+const CODE_PATTERN =
+  /(\/\/.*|#.*|\/\*.*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(\b(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?)\b)|(\b(?:if|else|elif|for|foreach|while|do|switch|case|break|continue|return|function|def|fn|func|class|struct|const|let|var|import|from|package|public|private|static|void|int|new|try|catch|finally|throw|true|false|null|nil|None|True|False|my|our|local|sub|use|require|unless|until|elsif|last|next|undef|die|defined|eq|ne|lt|gt|le|ge|and|or|not|defer|go|chan|range|map|select|interface|type|default|fallthrough|goto|make)\b)/g;
+const CODE_CLASSES = [
+  'code-comment',
+  'code-string',
+  'code-number',
+  'code-keyword',
+];
+
+/** @param {string} text */
+function highlightCode(text) {
+  let html = '';
+  let lastIndex = 0;
+  for (const match of text.matchAll(CODE_PATTERN)) {
+    html += escapeHtml(text.slice(lastIndex, match.index));
+    const group = match.findIndex((value, i) => i > 0 && value !== undefined);
+    html += wrap(CODE_CLASSES[group - 1], match[0]);
+    lastIndex = match.index + match[0].length;
+  }
+  return html + escapeHtml(text.slice(lastIndex));
+}
+
 /** @param {string} text */
 function highlightInline(text) {
   let html = '';
@@ -51,7 +74,9 @@ export function highlightMarkdown(text) {
         inCodeBlock = !inCodeBlock;
         return wrap('codeblock', line);
       }
-      return inCodeBlock ? wrap('codeblock', line) : highlightLine(line);
+      return inCodeBlock
+        ? `<span class="md-codeblock">${highlightCode(line)}</span>`
+        : highlightLine(line);
     })
     .join('\n');
   // 末尾の改行だけだと pre に最後の空行が表示されず、textarea と高さがずれる

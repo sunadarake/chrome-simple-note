@@ -418,6 +418,22 @@ body {
   color: #8e44ad;
 }
 
+.md-code-comment {
+  color: #6a737d;
+}
+
+.md-code-string {
+  color: #2e7d32;
+}
+
+.md-code-number {
+  color: #e67e22;
+}
+
+.md-code-keyword {
+  color: #c0392b;
+}
+
 .md-bold {
   color: #d35400;
 }
@@ -528,6 +544,26 @@ body {
 .main-content.secret .md-codeblock,
 .container[data-theme='dark'] .main-content:not(.secret) .md-codeblock {
   color: #c58af9;
+}
+
+.main-content.secret .md-code-comment,
+.container[data-theme='dark'] .main-content:not(.secret) .md-code-comment {
+  color: #9aa0a6;
+}
+
+.main-content.secret .md-code-string,
+.container[data-theme='dark'] .main-content:not(.secret) .md-code-string {
+  color: #81c995;
+}
+
+.main-content.secret .md-code-number,
+.container[data-theme='dark'] .main-content:not(.secret) .md-code-number {
+  color: #fdd663;
+}
+
+.main-content.secret .md-code-keyword,
+.container[data-theme='dark'] .main-content:not(.secret) .md-code-keyword {
+  color: #f28b82;
 }
 
 .main-content.secret .md-bold,

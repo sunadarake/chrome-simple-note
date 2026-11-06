@@ -62,12 +62,13 @@ describe('行内の記法', () => {
 });
 
 describe('コードブロック', () => {
-  it('開始行から終了行までをコードブロックにする', () => {
-    expect(highlightMarkdown('```js\n# a\n**b**\n```\n# c')).toBe(
+  const code = (inner) => span('codeblock', inner);
+
+  it('開始行から終了行までをコードブロックにし、中は Markdown の記法を色付けしない', () => {
+    expect(highlightMarkdown('```js\nx **b**\n```\n# c')).toBe(
       [
         span('codeblock', '```js'),
-        span('codeblock', '# a'),
-        span('codeblock', '**b**'),
+        code('x **b**'),
         span('codeblock', '```'),
         span('heading', '# c'),
       ].join('\n'),
@@ -75,9 +76,48 @@ describe('コードブロック', () => {
   });
 
   it('閉じていなければ以降すべてコードブロックになる', () => {
-    expect(highlightMarkdown('```\n# a')).toBe(
-      span('codeblock', '```') + '\n' + span('codeblock', '# a'),
+    expect(highlightMarkdown('```\nx')).toBe(
+      span('codeblock', '```') + '\n' + code('x'),
     );
+  });
+
+  it.each([
+    ['// a', span('code-comment', '// a')],
+    ['# a', span('code-comment', '# a')],
+    ['/* a */ b', span('code-comment', '/* a */') + ' b'],
+    ['"a\\"b"', span('code-string', '"a\\"b"')],
+    ["'a'", span('code-string', "'a'")],
+    ['`a`', span('code-string', '`a`')],
+    ['x = 42', 'x = ' + span('code-number', '42')],
+    ['x = 0xFF', 'x = ' + span('code-number', '0xFF')],
+    ['if x', span('code-keyword', 'if') + ' x'],
+    ['my $x', span('code-keyword', 'my') + ' $x'],
+    ['unless x', span('code-keyword', 'unless') + ' x'],
+    ['defer f()', span('code-keyword', 'defer') + ' f()'],
+    [
+      'for k := range m',
+      span('code-keyword', 'for') +
+        ' k := ' +
+        span('code-keyword', 'range') +
+        ' m',
+    ],
+    ['x := `a\\b`', 'x := ' + span('code-string', '`a\\b`')],
+  ])('コード内の %s を色付けする', (line, html) => {
+    expect(highlightMarkdown('```\n' + line)).toContain(code(html));
+  });
+
+  it('文字列の中の // や # はコメントにしない', () => {
+    expect(highlightMarkdown('```\n"a // b" # c')).toContain(
+      code(span('code-string', '"a // b"') + ' ' + span('code-comment', '# c')),
+    );
+  });
+
+  it('閉じていない文字列とコメントには色を付けない', () => {
+    expect(highlightMarkdown('```\n"a /* b')).toContain(code('"a /* b'));
+  });
+
+  it('識別子の一部はキーワードや数値にしない', () => {
+    expect(highlightMarkdown('```\niffy a1')).toContain(code('iffy a1'));
   });
 });
 
@@ -101,7 +141,7 @@ describe('エスケープと文字の保持', () => {
       '> 引用 & **太字**',
       '- リスト `code` *斜体* [a](b)',
       '```',
-      '*コード* <b>',
+      'if (x) { return "a<b" } // 1 & 2',
       '```',
       '---',
       '',
