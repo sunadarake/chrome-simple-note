@@ -3,6 +3,7 @@
  * @property {number} id
  * @property {string} title
  * @property {string} content
+ * @property {string} [customTitle] 手動で付けたタイトルの全文。あれば本文の先頭行より優先する
  * @property {string} createdAt
  * @property {boolean} [secret] シークレットメモ。タブを閉じると消える
  */
@@ -22,6 +23,17 @@ export function titleOf(content, length) {
 }
 
 /**
+ * 手動タイトル（前後の空白を除く）があればそれを、なければ本文の先頭行を、指定の文字数まで
+ * @param {string} content
+ * @param {string | undefined} customTitle
+ * @param {number} length
+ * @returns {string}
+ */
+export function titleFor(content, customTitle, length) {
+  return customTitle?.trim().substring(0, length) || titleOf(content, length);
+}
+
+/**
  * @param {Date} [now]
  * @param {boolean} [secret]
  * @returns {Memo}
@@ -37,30 +49,36 @@ export function createMemo(now = new Date(), secret = false) {
 }
 
 /**
- * タイトルは更新後の本文から作る
+ * タイトルは更新後の本文と手動タイトルから作る。手動タイトルが空なら自動に戻す
  * @param {Memo[]} memos
  * @param {number} id
  * @param {string} content
  * @param {number} titleLength
+ * @param {string} [customTitle] 省略すると今の手動タイトルのまま
  * @returns {Memo[]}
  */
-export function updateContent(memos, id, content, titleLength) {
-  return memos.map((memo) =>
-    memo.id === id
-      ? { ...memo, content, title: titleOf(content, titleLength) }
-      : memo,
-  );
+export function updateContent(memos, id, content, titleLength, customTitle) {
+  return memos.map((memo) => {
+    if (memo.id !== id) return memo;
+    const custom = (customTitle ?? memo.customTitle)?.trim() || undefined;
+    return {
+      ...memo,
+      content,
+      customTitle: custom,
+      title: titleFor(content, custom, titleLength),
+    };
+  });
 }
 
 /**
- * 全メモのタイトルを本文から作り直す。変わらないメモは同じオブジェクトのまま返す
+ * 全メモのタイトルを本文と手動タイトルから作り直す。変わらないメモは同じオブジェクトのまま返す
  * @param {Memo[]} memos
  * @param {number} titleLength
  * @returns {Memo[]}
  */
 export function retitle(memos, titleLength) {
   return memos.map((memo) => {
-    const title = titleOf(memo.content, titleLength);
+    const title = titleFor(memo.content, memo.customTitle, titleLength);
     return title === memo.title ? memo : { ...memo, title };
   });
 }

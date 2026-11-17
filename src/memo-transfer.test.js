@@ -74,6 +74,20 @@ describe('parseImport', () => {
     expect(parseImport(file([memo(1, true)]))[0].secret).toBe(false);
   });
 
+  it('customTitle があれば取り込み、なくても読める', () => {
+    const [named, plain] = parseImport(
+      file([{ ...memo(1), customTitle: ' 手動 ' }, memo(2)]),
+    );
+    expect(named.customTitle).toBe('手動');
+    expect(plain.customTitle).toBeUndefined();
+  });
+
+  it('customTitle を書き出して取り込むと元に戻る', () => {
+    const memos = [{ ...memo(1), customTitle: '手動' }];
+    const text = exportMemos(memos, new Date());
+    expect(parseImport(text)[0].customTitle).toBe('手動');
+  });
+
   it('空のメモ一覧は空配列になる', () => {
     expect(parseImport(file([]))).toEqual([]);
   });

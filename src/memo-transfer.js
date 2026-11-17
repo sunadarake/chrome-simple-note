@@ -7,6 +7,7 @@ const FORMAT_VERSION = 1;
  * @typedef {object} RawMemo
  * @property {number} [id]
  * @property {string} [title]
+ * @property {string} [customTitle]
  * @property {string} [content]
  * @property {string} [createdAt]
  */
@@ -61,6 +62,10 @@ export function parseImport(text, titleLength) {
             ? item.title
             : titleOf(item.content, titleLength),
         content: item.content,
+        customTitle:
+          typeof item.customTitle === 'string'
+            ? item.customTitle.trim() || undefined
+            : undefined,
         createdAt:
           typeof item.createdAt === 'string'
             ? item.createdAt

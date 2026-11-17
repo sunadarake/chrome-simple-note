@@ -334,6 +334,26 @@ body {
   padding: 6px 0;
   color: #333;
   min-height: 40px;
+  min-width: 0;
+  cursor: text;
+}
+
+/* 切り替えで文字の位置が動かないよう、表示と同じ文字・高さにする */
+.title-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid #999;
+  outline: none;
+  background: transparent;
+  color: #333;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .editor {
@@ -467,8 +487,15 @@ body {
 }
 
 .main-content.secret .title-display,
-.container[data-theme='dark'] .main-content:not(.secret) .title-display {
+.container[data-theme='dark'] .main-content:not(.secret) .title-display,
+.main-content.secret .title-input,
+.container[data-theme='dark'] .main-content:not(.secret) .title-input {
   color: #ecf0f1;
+}
+
+.main-content.secret .title-input,
+.container[data-theme='dark'] .main-content:not(.secret) .title-input {
+  border-bottom-color: #888;
 }
 
 .main-content.secret .main-header {

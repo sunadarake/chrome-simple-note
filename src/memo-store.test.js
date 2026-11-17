@@ -4,6 +4,7 @@ import {
   filterMemos,
   removeMemo,
   retitle,
+  titleFor,
   titleOf,
   updateContent,
 } from './memo-store.js';
@@ -140,5 +141,40 @@ describe('filterMemos', () => {
 
   it('該当がなければ空配列を返す', () => {
     expect(filterMemos(memos, 'zzz')).toEqual([]);
+  });
+});
+
+describe('手動タイトル', () => {
+  it('titleFor は手動タイトルを優先し、文字数で切る', () => {
+    expect(titleFor('本文', '  手動  ', 30)).toBe('手動');
+    expect(titleFor('本文', 'あ'.repeat(40), 30)).toBe('あ'.repeat(30));
+  });
+
+  it('titleFor は手動タイトルが空か空白のみなら本文から作る', () => {
+    expect(titleFor('本文', undefined, 30)).toBe('本文');
+    expect(titleFor('本文', '', 30)).toBe('本文');
+    expect(titleFor('本文', '  ', 30)).toBe('本文');
+  });
+
+  it('updateContent は手動タイトルを保存し、本文を変えても固定する', () => {
+    const named = updateContent([memo(1, 'a')], 1, 'b', 30, '手動');
+    expect(named[0]).toMatchObject({ customTitle: '手動', title: '手動' });
+    const edited = updateContent(named, 1, 'c', 30);
+    expect(edited[0]).toMatchObject({ customTitle: '手動', title: '手動' });
+  });
+
+  it('updateContent は手動タイトルを空にすると自動に戻す', () => {
+    const named = updateContent([memo(1, 'a')], 1, 'b', 30, '手動');
+    const reset = updateContent(named, 1, 'b', 30, '');
+    expect(reset[0].customTitle).toBeUndefined();
+    expect(reset[0].title).toBe('b');
+  });
+
+  it('retitle は手動タイトルを新しい文字数で切り、全文は残す', () => {
+    const named = { ...memo(1, 'a'), customTitle: 'あ'.repeat(40), title: '' };
+    const [short] = retitle([named], 10);
+    expect(short.title).toBe('あ'.repeat(10));
+    expect(short.customTitle).toBe('あ'.repeat(40));
+    expect(retitle([short], 40)[0].title).toBe('あ'.repeat(40));
   });
 });

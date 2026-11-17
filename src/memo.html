@@ -144,7 +144,16 @@
           >
             »
           </button>
-          <div class="title-display">新しいメモ</div>
+          <div class="title-display" title="クリックしてタイトルを変更">
+            新しいメモ
+          </div>
+          <input
+            type="text"
+            class="title-input"
+            maxlength="100"
+            aria-label="タイトル"
+            hidden
+          />
           <button class="delete-btn" title="このメモを削除する">削除</button>
           <button class="copy-btn" title="本文をコピーする">コピー</button>
           <button class="save-btn" title="このメモを保存する">保存</button>

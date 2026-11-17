@@ -5,7 +5,7 @@ import {
   filterMemos,
   removeMemo,
   retitle,
-  titleOf,
+  titleFor,
   updateContent,
 } from './memo-store.js';
 import { loadSettings, saveSettings } from './settings.js';
@@ -42,7 +42,8 @@ export function initMemoApp({
   const memoList = query('.memo-list');
   const mainContent = query('.main-content');
   const secretLabel = /** @type {HTMLElement} */ (query('.secret-label'));
-  const titleDisplay = query('.title-display');
+  const titleDisplay = /** @type {HTMLElement} */ (query('.title-display'));
+  const titleInput = /** @type {HTMLInputElement} */ (query('.title-input'));
   const contentInput = /** @type {HTMLTextAreaElement} */ (
     query('.content-input')
   );
@@ -80,6 +81,10 @@ export function initMemoApp({
   /** @type {number | null} */
   let currentId = null;
   let lastContent = '';
+  // 手動タイトルは本文と同じく、保存するまでは画面上の変更として持つ
+  let customTitle = '';
+  let lastCustomTitle = '';
+  let editingTitle = false;
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   let autoSaveTimer;
   /** @type {ReturnType<typeof setTimeout> | undefined} */
@@ -114,8 +119,13 @@ export function initMemoApp({
     secretLabel.hidden = !memo.secret;
     contentInput.value = memo.content;
     updateHighlight();
-    updateTitleDisplay(memo.content);
+    customTitle = memo.customTitle ?? '';
     lastContent = memo.content;
+    lastCustomTitle = customTitle;
+    editingTitle = false;
+    titleInput.hidden = true;
+    titleDisplay.hidden = false;
+    updateTitleDisplay();
     renderMemoList();
   }
 
@@ -124,10 +134,34 @@ export function initMemoApp({
     highlightLayer.scrollTop = contentInput.scrollTop;
   }
 
-  /** @param {string} content */
-  function updateTitleDisplay(content) {
+  function updateTitleDisplay() {
     titleDisplay.textContent =
-      titleOf(content, settings.titleLength) || '新しいメモ';
+      titleFor(contentInput.value, customTitle, settings.titleLength) ||
+      '新しいメモ';
+  }
+
+  function startTitleEdit() {
+    editingTitle = true;
+    titleInput.value = customTitle;
+    // 空のまま確定すると自動に戻ることを、今の自動タイトルで示す
+    titleInput.placeholder =
+      titleFor(contentInput.value, '', settings.titleLength) || '新しいメモ';
+    titleDisplay.hidden = true;
+    titleInput.hidden = false;
+    titleInput.focus();
+    titleInput.select();
+  }
+
+  /** @param {boolean} commit */
+  function endTitleEdit(commit) {
+    // 入力欄を隠すと blur も起きるので、二重に確定しない
+    if (!editingTitle) return;
+    editingTitle = false;
+    if (commit) customTitle = titleInput.value.trim();
+    titleInput.hidden = true;
+    titleDisplay.hidden = false;
+    updateTitleDisplay();
+    if (commit) scheduleAutoSave();
   }
 
   /**
@@ -158,10 +192,12 @@ export function initMemoApp({
       currentId,
       contentInput.value,
       settings.titleLength,
+      customTitle,
     );
     saveMemos(storage, sessionStorage, memos);
     renderMemoList();
     lastContent = contentInput.value;
+    lastCustomTitle = customTitle;
   }
 
   function saveMemo() {
@@ -223,14 +259,19 @@ export function initMemoApp({
 
   function handleContentInput() {
     updateHighlight();
-    updateTitleDisplay(contentInput.value);
+    updateTitleDisplay();
+    scheduleAutoSave();
+  }
+
+  function scheduleAutoSave() {
     clearTimeout(autoSaveTimer);
     if (!settings.autoSave) return;
     autoSaveTimer = setTimeout(() => {
       // 空白のみのメモは保存しない
       if (
         currentId !== null &&
-        contentInput.value !== lastContent &&
+        (contentInput.value !== lastContent ||
+          customTitle !== lastCustomTitle) &&
         contentInput.value.trim() !== ''
       ) {
         persistCurrentContent();
@@ -303,7 +344,7 @@ export function initMemoApp({
     applySettings();
     retitleAll();
     renderMemoList();
-    updateTitleDisplay(contentInput.value);
+    updateTitleDisplay();
   }
 
   /** @param {File[]} files */
@@ -362,6 +403,12 @@ export function initMemoApp({
   secretMemoBtn.addEventListener('click', () => createNewMemo(true));
   searchInput.addEventListener('input', renderMemoList);
   contentInput.addEventListener('input', handleContentInput);
+  titleDisplay.addEventListener('click', startTitleEdit);
+  titleInput.addEventListener('blur', () => endTitleEdit(true));
+  titleInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') endTitleEdit(true);
+    if (event.key === 'Escape') endTitleEdit(false);
+  });
   contentInput.addEventListener('scroll', () => {
     highlightLayer.scrollTop = contentInput.scrollTop;
   });

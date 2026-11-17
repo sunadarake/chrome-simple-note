@@ -813,3 +813,115 @@ describe('インポート', () => {
     expect(opened).toBe(true);
   });
 });
+
+describe('手動タイトル', () => {
+  const edit = (value, key) => {
+    q('.title-display').click();
+    q('.title-input').value = value;
+    if (key) {
+      q('.title-input').dispatchEvent(new KeyboardEvent('keydown', { key }));
+    } else {
+      q('.title-input').dispatchEvent(new Event('blur'));
+    }
+  };
+
+  it('クリックで入力欄に切り替わる', () => {
+    start({ memos: [memo(1, '本文')] });
+    expect(q('.title-input').hidden).toBe(true);
+    q('.title-display').click();
+    expect(q('.title-input').hidden).toBe(false);
+    expect(q('.title-display').hidden).toBe(true);
+    expect(q('.title-input').placeholder).toBe('本文');
+  });
+
+  it('Enter で確定すると、本文を変えても固定され、自動保存される', () => {
+    const storage = start({ memos: [memo(1, '本文')] });
+    edit('手動', 'Enter');
+    expect(q('.title-display').textContent).toBe('手動');
+    expect(q('.title-input').hidden).toBe(true);
+    vi.advanceTimersByTime(1000);
+    expect(stored(storage)[0]).toMatchObject({
+      customTitle: '手動',
+      title: '手動',
+    });
+    expect(items()[0].textContent).toBe('手動');
+    typeContent('別の本文');
+    vi.advanceTimersByTime(1000);
+    expect(stored(storage)[0]).toMatchObject({
+      content: '別の本文',
+      title: '手動',
+    });
+  });
+
+  it('フォーカスが外れても確定する', () => {
+    start({ memos: [memo(1, '本文')] });
+    edit('手動');
+    expect(q('.title-display').textContent).toBe('手動');
+  });
+
+  it('Escape で取り消す', () => {
+    const storage = start({ memos: [memo(1, '本文')] });
+    edit('手動', 'Escape');
+    expect(q('.title-display').textContent).toBe('本文');
+    vi.advanceTimersByTime(1000);
+    expect(stored(storage)[0].customTitle).toBeUndefined();
+  });
+
+  it('空で確定すると本文の先頭行に戻る', () => {
+    const storage = start({
+      memos: [{ ...memo(1, '本文'), customTitle: '手動', title: '手動' }],
+    });
+    expect(q('.title-display').textContent).toBe('手動');
+    edit('', 'Enter');
+    expect(q('.title-display').textContent).toBe('本文');
+    vi.advanceTimersByTime(1000);
+    expect(stored(storage)[0].title).toBe('本文');
+    expect(stored(storage)[0].customTitle).toBeUndefined();
+  });
+
+  it('一覧の検索が手動タイトルに当たる', () => {
+    start({ memos: [memo(1, '本文')] });
+    edit('ひみつの題', 'Enter');
+    vi.advanceTimersByTime(1000);
+    q('.search-input').value = 'ひみつ';
+    q('.search-input').dispatchEvent(new Event('input'));
+    expect(items()).toHaveLength(1);
+  });
+
+  it('自動保存オフでは、保存ボタンを押すまで保存しない', () => {
+    const storage = start({ memos: [memo(1, '本文')] });
+    q('.auto-save-input').checked = false;
+    q('.auto-save-input').dispatchEvent(new Event('change'));
+    edit('手動', 'Enter');
+    vi.advanceTimersByTime(10000);
+    expect(stored(storage)[0].customTitle).toBeUndefined();
+    q('.save-btn').click();
+    expect(stored(storage)[0].customTitle).toBe('手動');
+  });
+
+  it('本文が空のメモは、手動タイトルがあっても保存しない', () => {
+    const storage = start();
+    edit('手動', 'Enter');
+    vi.advanceTimersByTime(1000);
+    expect(storage.data.memos).toBeUndefined();
+  });
+
+  it('文字数の設定を変えると表示を切り、戻すと全文に戻る', () => {
+    start({
+      memos: [
+        {
+          ...memo(1, '本文'),
+          customTitle: 'あ'.repeat(40),
+          title: 'あ'.repeat(30),
+        },
+      ],
+    });
+    const select = q('.title-length-input');
+    select.value = '10';
+    select.dispatchEvent(new Event('change'));
+    expect(q('.title-display').textContent).toBe('あ'.repeat(10));
+    select.value = '40';
+    select.dispatchEvent(new Event('change'));
+    expect(q('.title-display').textContent).toBe('あ'.repeat(40));
+  });
+});
