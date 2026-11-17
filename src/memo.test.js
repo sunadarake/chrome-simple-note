@@ -30,13 +30,17 @@ const memo = (id, content) => ({
   createdAt: '2026-01-01T00:00:00.000Z',
 });
 
+// 多くのテストは、自動保存がオンでタイトルが30文字の設定を前提にしている。
+// 既定値そのものを見るテストは settings: null で始める
 const start = ({
   memos,
+  settings = { autoSave: true, titleLength: 30 },
   confirm = () => true,
   copy = () => {},
   download = () => {},
 } = {}) => {
   const storage = fakeStorage(memos);
+  if (settings) storage.data.settings = JSON.stringify(settings);
   const session = fakeStorage();
   initMemoApp({
     root: document,
@@ -393,8 +397,9 @@ describe('設定パネル', () => {
   });
 
   it('保存値がなければ既定値を表示する', () => {
-    start();
-    expect(q('.auto-save-input').checked).toBe(true);
+    start({ settings: null });
+    expect(q('.auto-save-input').checked).toBe(false);
+    expect(q('.title-length-input').value).toBe('50');
     expect(q('.auto-save-delay-input').value).toBe('1000');
     expect(q('.font-size-input').value).toBe('16');
     expect(q('.theme-input').value).toBe('light');
@@ -402,15 +407,15 @@ describe('設定パネル', () => {
   });
 
   it('変更した設定を保存し、再起動しても保たれる', () => {
-    const storage = start();
+    const storage = start({ settings: null });
     change('.auto-save-delay-input', '3000');
     change('.font-size-input', '20');
     change('.theme-input', 'dark');
     expect(settingsOf(storage)).toEqual({
-      autoSave: true,
+      autoSave: false,
       autoSaveDelayMs: 3000,
       fontSize: 20,
-      titleLength: 30,
+      titleLength: 50,
       theme: 'dark',
     });
     document.body.innerHTML = body;
@@ -482,13 +487,13 @@ describe('設定パネル', () => {
   describe('タイトルの文字数', () => {
     const long = 'あ'.repeat(120);
 
-    it('既定は30文字で、保存・一覧・タイトル表示に使う', () => {
-      const storage = start({ memos: [memo(1, 'a')] });
+    it('既定は50文字で、保存・一覧・タイトル表示に使う', () => {
+      const storage = start({ memos: [memo(1, 'a')], settings: null });
       typeContent(long);
-      vi.advanceTimersByTime(1000);
-      expect(stored(storage)[0].title).toBe('あ'.repeat(30));
-      expect(items()[0].textContent).toBe('あ'.repeat(30));
-      expect(q('.title-display').textContent).toBe('あ'.repeat(30));
+      q('.save-btn').click();
+      expect(stored(storage)[0].title).toBe('あ'.repeat(50));
+      expect(items()[0].textContent).toBe('あ'.repeat(50));
+      expect(q('.title-display').textContent).toBe('あ'.repeat(50));
     });
 
     it('変えると保存済みの全メモ（シークレットも）のタイトルを作り直す', () => {

@@ -1,0 +1,29 @@
+# タイトルの文字数の既定を50にし、自動保存の既定をオフにする
+
+## 概要
+設定の既定値を2つ変える。タイトルの文字数を 30 から 50 に、自動保存をオンからオフにする。
+
+## 調査結果
+- `src/settings.js` の `DEFAULT_SETTINGS`（`autoSave: true`、`titleLength: 30`）が既定値。`loadSettings` は項目ごとに保存値を検証し、なければ既定値で補う。
+- 保存済みの設定がある利用者は、`settings` キーに全項目が入っているため、既定を変えても今の設定は変わらない（`settings` キーがない／項目が欠けている場合だけ新しい既定になる）。
+- `src/memo.test.js` は、既定がオンであることを前提にしたテストがある（自動保存、手動タイトル、タイトル30文字など）。`src/settings.test.js` に既定値のテストがある。
+- `memo.html` の `select` に `selected` の指定はなく、画面の値は `settings` から入れている（`showSettings`）。
+- ドキュメント: `README.md`（使い方の「既定は 1 秒」、メモ一覧の「30 文字」）、`AGENTS.md`（設定の範囲の記述、自動保存、タイトルの文字数）。
+
+## 実装計画
+- [x] ステップ1: `src/settings.js` の `DEFAULT_SETTINGS` を `autoSave: false`、`titleLength: 50` にする
+- [x] ステップ2: `src/settings.test.js` の既定値のテストを 50 に直す
+- [x] ステップ3: `src/memo.test.js` のうち、既定がオン・30文字を前提にしたテストを直す。テストを弱めず、自動保存を確かめるテストは保存済みの設定で `autoSave: true` を入れて始める
+- [x] ステップ4: `README.md` と `AGENTS.md` の記述（自動保存はオフが既定、タイトルの既定は 50 文字）を直す
+
+## テスト・確認方法
+- [x] `npm test` / `npm run lint` / `npm run typecheck` / `npx prettier --check .` が通ること
+- [ ] 実機で、設定を消した状態（`localStorage` の `settings` を削除）で開くと、自動保存がオフでタイトルが 50 文字になること
+
+## 決定事項
+- 既定値だけを変える。保存済みの設定は移行しない（今の設定のまま）
+
+- テストは `start()` の既定で `{autoSave: true, titleLength: 30}` を入れて始め、既定値そのものを見るテストだけ `settings: null` で始める（テストの内容は弱めていない）
+
+## 懸念点・未決事項
+- 自動保存がオフが既定になるため、初めて使う人は「保存」ボタンを押さないと内容が残らない。画面上の案内は追加しない（依頼の範囲外）

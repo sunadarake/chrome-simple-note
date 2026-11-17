@@ -52,13 +52,18 @@ describe('settings', () => {
     expect(loaded.fontSize).toBe(24);
   });
 
-  it('タイトルの文字数は既定 30、10〜100 に丸める', () => {
-    expect(loadSettings(fakeStorage()).titleLength).toBe(30);
+  it('既定は自動保存オフ、タイトルは 50 文字', () => {
+    const loaded = loadSettings(fakeStorage());
+    expect(loaded.autoSave).toBe(false);
+    expect(loaded.titleLength).toBe(50);
+  });
+
+  it('タイトルの文字数は 10〜100 に丸める', () => {
     const load = (titleLength) =>
       loadSettings(fakeStorage(JSON.stringify({ titleLength }))).titleLength;
     expect(load(5)).toBe(10);
     expect(load(500)).toBe(100);
-    expect(load('30')).toBe(30);
+    expect(load('30')).toBe(50);
   });
 
   it('数値でない値は既定値にする', () => {

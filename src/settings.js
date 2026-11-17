@@ -15,10 +15,10 @@ export const TITLE_LENGTH_RANGE = { min: 10, max: 100 };
 
 /** @type {Settings} */
 export const DEFAULT_SETTINGS = {
-  autoSave: true,
+  autoSave: false,
   autoSaveDelayMs: 1000,
   fontSize: 16,
-  titleLength: 30,
+  titleLength: 50,
   theme: 'light',
 };
 
