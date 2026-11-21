@@ -176,6 +176,8 @@ body {
   gap: 12px;
   border-bottom: 1px solid #eee;
   margin-bottom: 6px;
+  margin-left: 2rem;
+  margin-right: 2rem;
 }
 
 .sidebar-toggle {
