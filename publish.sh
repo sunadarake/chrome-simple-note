@@ -31,3 +31,17 @@ trap 'rm -f "$notes_file"' EXIT
 sed "s/{{VERSION}}/${version}/g" release-notes.md > "$notes_file"
 
 gh release create "$tag" "$zip_path" --title "$tag" --notes-file "$notes_file"
+
+# 公開に成功してから、古い Release とタグを消す（失敗したときに古い Release まで失わないため）
+old_tags=$(gh release list --limit 1000 --json tagName --jq '.[].tagName' | grep -vx "$tag" || true)
+if [ -n "$old_tags" ]; then
+  echo "次の古い Release とタグを削除します:"
+  echo "$old_tags"
+  read -r -p "削除しますか？ [y/N] " answer || answer=n
+  if [ "$answer" = "y" ]; then
+    for old_tag in $old_tags; do
+      gh release delete "$old_tag" --cleanup-tag --yes
+      git tag -d "$old_tag" 2>/dev/null || true
+    done
+  fi
+fi

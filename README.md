@@ -47,7 +47,7 @@ Chrome で `chrome://extensions` を開き、「デベロッパーモード」�
 | `npm run typecheck` | 型チェックを実行する |
 | `npm run format` | Prettier で整形する |
 | `./release.sh` | 配布用の zip を `release/` に作る |
-| `./publish.sh` | zip を GitHub Release に公開する |
+| `./publish.sh` | zip を GitHub Release に公開する。公開後、古い Release とタグを確認のうえ削除する |
 
 ## ライセンス
 [MIT License](LICENSE)

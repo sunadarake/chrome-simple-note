@@ -61,7 +61,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - `manifest.json` の `key` は拡張機能IDを固定するための公開鍵。変更・削除するとIDが変わる
 - バージョンは `manifest.json` の `version` で決まる。リリース前に手で更新する（zip 名とタグ `v<version>` に使われる）。`package.json` と `package-lock.json` の先頭2か所の `version` も同じ値にそろえる
 - `release-notes.md` の「概要」は 2〜3 行で簡潔に書く。機能を追加しても行を増やさず、まとめ直す
-- `publish.sh` は未コミットの変更・未 push のコミット・同じタグの Release があると止まる
+- `publish.sh` は未コミットの変更・未 push のコミット・同じタグの Release があると止まる。公開に成功したあと、古い Release とタグを一覧で見せて y/N で確認し、y のときだけ削除する（最新の1つだけ残る）
 
 ## 作業の進め方
 - 作業の前に、関連するコードと仕様を読んで理解する
