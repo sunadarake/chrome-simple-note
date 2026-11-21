@@ -3,6 +3,7 @@
   "name": "Chrome-Simple-Memo",
   "version": "13.5.1",
   "description": "シンプルなマークダウンメモ帳",
+  "permissions": ["tabs"],
   "action": {
     "default_title": "Simple Memo"
   },
