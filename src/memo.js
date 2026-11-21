@@ -185,6 +185,15 @@ export function initMemoApp({
     loadMemo(newMemo.id);
   }
 
+  function selectFirstMemoOrCreate() {
+    currentId = null;
+    if (memos.length > 0) {
+      loadMemo(memos[0].id);
+    } else {
+      createNewMemo(false);
+    }
+  }
+
   function persistCurrentContent() {
     if (currentId === null) return;
     memos = updateContent(
@@ -221,12 +230,7 @@ export function initMemoApp({
     }
     memos = removeMemo(memos, memo.id);
     saveMemos(storage, sessionStorage, memos);
-    currentId = null;
-    if (memos.length > 0) {
-      loadMemo(memos[0].id);
-    } else {
-      createNewMemo(false);
-    }
+    selectFirstMemoOrCreate();
     showLogMessage('メモを削除しました', 'delete');
   }
 
@@ -248,12 +252,7 @@ export function initMemoApp({
     }
     memos = memos.filter((memo) => memo.secret);
     saveMemos(storage, sessionStorage, memos);
-    currentId = null;
-    if (memos.length > 0) {
-      loadMemo(memos[0].id);
-    } else {
-      createNewMemo(false);
-    }
+    selectFirstMemoOrCreate();
     showLogMessage(`${count}件のメモを削除しました`, 'delete');
   }
 

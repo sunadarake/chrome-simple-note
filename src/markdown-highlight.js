@@ -23,30 +23,31 @@ const CODE_CLASSES = [
   'code-keyword',
 ];
 
-/** @param {string} text */
-function highlightCode(text) {
+/**
+ * @param {string} text
+ * @param {RegExp} pattern
+ * @param {string[]} classes
+ */
+function highlightMatches(text, pattern, classes) {
   let html = '';
   let lastIndex = 0;
-  for (const match of text.matchAll(CODE_PATTERN)) {
+  for (const match of text.matchAll(pattern)) {
     html += escapeHtml(text.slice(lastIndex, match.index));
     const group = match.findIndex((value, i) => i > 0 && value !== undefined);
-    html += wrap(CODE_CLASSES[group - 1], match[0]);
+    html += wrap(classes[group - 1], match[0]);
     lastIndex = match.index + match[0].length;
   }
   return html + escapeHtml(text.slice(lastIndex));
 }
 
 /** @param {string} text */
+function highlightCode(text) {
+  return highlightMatches(text, CODE_PATTERN, CODE_CLASSES);
+}
+
+/** @param {string} text */
 function highlightInline(text) {
-  let html = '';
-  let lastIndex = 0;
-  for (const match of text.matchAll(INLINE_PATTERN)) {
-    html += escapeHtml(text.slice(lastIndex, match.index));
-    const group = match.findIndex((value, i) => i > 0 && value !== undefined);
-    html += wrap(INLINE_CLASSES[group - 1], match[0]);
-    lastIndex = match.index + match[0].length;
-  }
-  return html + escapeHtml(text.slice(lastIndex));
+  return highlightMatches(text, INLINE_PATTERN, INLINE_CLASSES);
 }
 
 /** @param {string} line */
