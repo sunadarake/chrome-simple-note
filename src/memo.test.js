@@ -250,6 +250,24 @@ describe('シークレットメモ', () => {
     expect(stored(storage).every((m) => !m.secret)).toBe(true);
   });
 
+  it('本文が空でも、手動タイトルだけで sessionStorage に保存する', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    createSecret();
+    q('.title-display').click();
+    q('.title-input').value = '秘密の題';
+    q('.title-input').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter' }),
+    );
+    vi.advanceTimersByTime(1000);
+    expect(sessionStored(storage)[0]).toMatchObject({
+      content: '',
+      customTitle: '秘密の題',
+      title: '秘密の題',
+    });
+    expect(stored(storage).every((m) => !m.secret)).toBe(true);
+    expect(items()[0].textContent).toBe('🔒 秘密の題');
+  });
+
   it('保存と自動保存は sessionStorage にだけ書く', () => {
     const storage = start({ memos: [memo(1, 'a')] });
     createSecret();
@@ -593,6 +611,23 @@ describe('設定パネル', () => {
       expect(q('.content-input').value).toBe('');
     });
 
+    it('本文が空でタイトルだけのメモも件数に数えて削除する', () => {
+      const confirm = vi.fn(() => true);
+      const storage = start({ memos: [memo(1, 'a')], confirm });
+      q('.new-memo-btn').click();
+      q('.title-display').click();
+      q('.title-input').value = '手動';
+      q('.title-input').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter' }),
+      );
+      vi.advanceTimersByTime(1000);
+      q('.delete-all-btn').click();
+      expect(confirm).toHaveBeenCalledWith(
+        '通常メモ2件をすべて削除します（シークレットメモは残ります）。よろしいですか？',
+      );
+      expect(stored(storage)).toEqual([]);
+    });
+
     it('通常メモがなければ確認せずメッセージを出す', () => {
       const confirm = vi.fn(() => true);
       start({ confirm });
@@ -904,9 +939,36 @@ describe('手動タイトル', () => {
     expect(stored(storage)[0].customTitle).toBe('手動');
   });
 
-  it('本文が空のメモは、手動タイトルがあっても保存しない', () => {
+  it('本文が空でも、手動タイトルだけで自動保存される', () => {
     const storage = start();
     edit('手動', 'Enter');
+    vi.advanceTimersByTime(1000);
+    expect(stored(storage)[0]).toMatchObject({
+      content: '',
+      customTitle: '手動',
+      title: '手動',
+    });
+    expect(items()[0].textContent).toBe('手動');
+  });
+
+  it('本文が空でも、保存ボタンで手動タイトルを保存する', () => {
+    const storage = start({
+      settings: { autoSave: false, titleLength: 30 },
+    });
+    edit('手動', 'Enter');
+    vi.advanceTimersByTime(10000);
+    expect(storage.data.memos).toBeUndefined();
+    q('.save-btn').click();
+    expect(stored(storage)[0]).toMatchObject({
+      content: '',
+      customTitle: '手動',
+      title: '手動',
+    });
+  });
+
+  it('本文もタイトルも空なら保存しない', () => {
+    const storage = start();
+    edit('', 'Enter');
     vi.advanceTimersByTime(1000);
     expect(storage.data.memos).toBeUndefined();
   });

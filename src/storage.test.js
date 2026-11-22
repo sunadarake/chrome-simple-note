@@ -33,7 +33,7 @@ describe('storage', () => {
     expect(JSON.parse(session.data.memos)).toEqual([memo(2, true)]);
   });
 
-  it('何も書いていない（空白のみを含む）メモは書かない', () => {
+  it('本文もタイトルも空のメモは書かない', () => {
     const local = fakeStorage();
     const session = fakeStorage();
     const blank = (id, secret, content) => ({ ...memo(id, secret), content });
@@ -45,6 +45,20 @@ describe('storage', () => {
     ]);
     expect(JSON.parse(local.data.memos)).toEqual([memo(1, false)]);
     expect(JSON.parse(session.data.memos)).toEqual([memo(2, true)]);
+  });
+
+  it('本文が空でも手動タイトルがあれば書く', () => {
+    const local = fakeStorage();
+    const session = fakeStorage();
+    const titled = (id, secret) => ({
+      ...memo(id, secret),
+      content: '',
+      title: `手動${id}`,
+      customTitle: `手動${id}`,
+    });
+    saveMemos(local, session, [titled(2, true), titled(1, false)]);
+    expect(JSON.parse(local.data.memos)).toEqual([titled(1, false)]);
+    expect(JSON.parse(session.data.memos)).toEqual([titled(2, true)]);
   });
 
   it('保存したメモを新しい順で読み込める', () => {

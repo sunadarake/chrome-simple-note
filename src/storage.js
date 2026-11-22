@@ -1,3 +1,5 @@
+import { hasSavableContent } from './memo-store.js';
+
 const KEY = 'memos';
 
 /**
@@ -13,14 +15,16 @@ export function loadMemos(local, session) {
 }
 
 /**
- * シークレットメモは local に書かない。何も書いていない（空白のみを含む）メモは
+ * シークレットメモは local に書かない。本文もタイトルも空のメモは
  * 書き始める前の新規メモなので、どちらにも書かない
  * @param {Pick<Storage, 'setItem'>} local
  * @param {Pick<Storage, 'setItem'>} session
  * @param {import('./memo-store.js').Memo[]} memos
  */
 export function saveMemos(local, session, memos) {
-  const written = memos.filter((memo) => memo.content.trim() !== '');
+  const written = memos.filter((memo) =>
+    hasSavableContent(memo.content, memo.customTitle),
+  );
   local.setItem(KEY, JSON.stringify(written.filter((memo) => !memo.secret)));
   session.setItem(KEY, JSON.stringify(written.filter((memo) => memo.secret)));
 }

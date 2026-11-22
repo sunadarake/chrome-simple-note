@@ -34,6 +34,16 @@ export function titleFor(content, customTitle, length) {
 }
 
 /**
+ * 本文か手動タイトルのどちらかに中身があれば、保存する意味がある
+ * @param {string} content
+ * @param {string} [customTitle]
+ * @returns {boolean}
+ */
+export function hasSavableContent(content, customTitle) {
+  return content.trim() !== '' || Boolean(customTitle?.trim());
+}
+
+/**
  * @param {Date} [now]
  * @param {boolean} [secret]
  * @returns {Memo}

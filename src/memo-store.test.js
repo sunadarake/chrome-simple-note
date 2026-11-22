@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createMemo,
   filterMemos,
+  hasSavableContent,
   removeMemo,
   retitle,
   titleFor,
@@ -53,6 +54,21 @@ describe('titleOf', () => {
 
   it('見出し記号を除いた後で文字数に切る', () => {
     expect(titleOf(`# ${'あ'.repeat(40)}`, 30)).toBe('あ'.repeat(30));
+  });
+});
+
+describe('hasSavableContent', () => {
+  it('本文か手動タイトルのどちらかに中身があれば true', () => {
+    expect(hasSavableContent('本文', undefined)).toBe(true);
+    expect(hasSavableContent('本文', '')).toBe(true);
+    expect(hasSavableContent('', '手動')).toBe(true);
+    expect(hasSavableContent('  ', '手動')).toBe(true);
+  });
+
+  it('本文も手動タイトルも空白のみなら false', () => {
+    expect(hasSavableContent('', undefined)).toBe(false);
+    expect(hasSavableContent(' \n\t', '')).toBe(false);
+    expect(hasSavableContent('', '  ')).toBe(false);
   });
 });
 

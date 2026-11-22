@@ -3,6 +3,7 @@ import { exportMemos, mergeMemos, parseImport } from './memo-transfer.js';
 import {
   createMemo,
   filterMemos,
+  hasSavableContent,
   removeMemo,
   retitle,
   titleFor,
@@ -211,8 +212,8 @@ export function initMemoApp({
 
   function saveMemo() {
     if (currentId === null) return;
-    // 空白のみを反映すると、保存済みのメモがリロードで消える
-    if (contentInput.value.trim() === '') {
+    // 本文もタイトルも空にすると、保存済みのメモがリロードで消える
+    if (!hasSavableContent(contentInput.value, customTitle)) {
       showLogMessage('内容が空のため保存しませんでした');
       return;
     }
@@ -237,7 +238,8 @@ export function initMemoApp({
   function deleteAllMemos() {
     // 書き始める前の空メモは保存されていないので、件数に数えない
     const count = memos.filter(
-      (memo) => !memo.secret && memo.content.trim() !== '',
+      (memo) =>
+        !memo.secret && hasSavableContent(memo.content, memo.customTitle),
     ).length;
     if (count === 0) {
       showLogMessage('削除するメモがありません');
@@ -266,12 +268,12 @@ export function initMemoApp({
     clearTimeout(autoSaveTimer);
     if (!settings.autoSave) return;
     autoSaveTimer = setTimeout(() => {
-      // 空白のみのメモは保存しない
+      // 本文もタイトルも空のメモは保存しない
       if (
         currentId !== null &&
         (contentInput.value !== lastContent ||
           customTitle !== lastCustomTitle) &&
-        contentInput.value.trim() !== ''
+        hasSavableContent(contentInput.value, customTitle)
       ) {
         persistCurrentContent();
       }
