@@ -9,16 +9,21 @@ allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git c
 !`git status --short`
 
 ## タグ
-!`git tag --sort=-v:refname`
+!`git tag --sort=-v:refname | head -5`
 
 ## 最近のコミット
-!`git log --oneline -30`
+!`git log --oneline -10`
 
 ## 引数
 $ARGUMENTS
 
 ## 手順
-1. 現在のバージョン(`1.0.0` 形式)を読む。`package.json` → `pyproject.toml` → `Cargo.toml` → `VERSION` の順に探し、最初に見つかったものを正とする
+1. 現在のバージョン(`1.0.0` 形式)を読む。次の順に探し、最初に見つかったものを正とする
+   - `package.json`(Node / Electron) → `manifest.json`(拡張機能など) → `pyproject.toml` → `setup.cfg` → `setup.py` → `Cargo.toml`
+   - `CMakeLists.txt`(`project(... VERSION x.y.z)`) → `meson.build` → `configure.ac`(`AC_INIT`)
+   - `Makefile.PL` / `dist.ini` / `META.json`(Perl)
+   - `version.go` / `version.h` などのバージョン定数(Go は `go.mod` に版がないため、定数がある場合のみ)
+   - `VERSION`
 2. どれもなければ `VERSION`(1行で `1.0.0`)を新規作成し、手順6へ進む(規模判定はしない)
 3. 引数があればそれに従う
    - `major` / `minor` / `patch`: 該当の桁を+1し、下位の桁は0にする
@@ -30,8 +35,12 @@ $ARGUMENTS
    - minor: 後方互換のある機能追加、大きめの変更
    - patch: バグ修正、リファクタ、docs、chore のみ
    - 迷う場合は低い方にする。変更が1件もなければ更新せず報告して止める
-5. 同じ値を持つ他のバージョン記載(`package-lock.json` の先頭の `version` など)も合わせて更新する
-6. バージョンのファイルだけを `git add` して commit する
+5. 同じ値を持つ他のバージョン記載(`package-lock.json` の先頭の `version`、`__version__`、`#define *_VERSION`、Perl の `$VERSION` など)も合わせて更新する
+6. バージョンのファイルだけを `git add` し、`git commit -q` でコミットする
+
+## ログ
+- 正常時は出力を小さくし、成功時の詳細は表示しない
+- 失敗したときだけエラー内容を表示する
 
 ## コミットメッセージ
 - 日本語で簡潔に書く。1行目は `chore: バージョンを X.Y.Z に更新`

@@ -1,6 +1,6 @@
 ---
 name: todo-plan
-description: 実装計画を立てて todo/ に連番のTODOファイルを作成する
+description: 実装計画を立てて todo/ に TODO を作成する
 ---
 
 ## 依頼内容

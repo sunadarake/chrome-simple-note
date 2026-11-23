@@ -1,6 +1,6 @@
 ---
 name: refactor
-description: 安全な小さいリファクタリングは実行し、判断が要るものは一覧にして確認する
+description: 安全な小さいリファクタリングを実行し、要判断の案は一覧で確認する
 argument-hint: [対象のファイル・ディレクトリ（複数可、省略時は自動）]
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git checkout:*), Read, Glob, Grep, Edit, Bash
 ---
@@ -27,8 +27,9 @@ allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git checkout:*), Read,
 
 ## 分類
 - 🟢 実行する（安全）
-  - 未使用の変数・import の削除
+  - 未使用の変数・関数・import の削除
   - 同じファイル内の重複コードの共通化
+  - コードを読めば分かることを繰り返すだけのコメントの削除
   - 動作を変えない関数の分割
   - 同じファイル内の命名の統一
 - 🟡 確認する（実行しない）

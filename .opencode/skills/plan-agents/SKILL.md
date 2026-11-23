@@ -1,7 +1,6 @@
 ---
 name: plan-agents
-name: plan-agents
-description: 仕様（文章またはファイル）をもとにユーザーと対話しながら実装計画を立て、指示があったら AGENTS.md と todo/001-todo.md などのタスクファイルを書く。/plan-agent と呼ばれたときや、実装計画づくりを頼まれたときに使う。
+description: 仕様から実装計画をユーザーと対話で作り、AGENTS.md と todo/ に書き出す
 ---
 
 # plan-agent

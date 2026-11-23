@@ -1,6 +1,6 @@
 ---
 name: todo-plan-and-do
-description: 実装計画を立てて todo/ に TODO を作成し、続けてそのまま実装する
+description: 実装計画から todo/ 作成と実装まで一括で行う
 argument-hint: <実装したい内容 | 既存のTODOファイルパス>
 allowed-tools: Bash(ls:*), Bash(tail:*), Read, Glob, Grep, Edit, Write, AskUserQuestion
 ---

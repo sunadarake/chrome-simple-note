@@ -3,6 +3,28 @@
       "commit" : "",
       "pr" : ""
    },
+   "hooks" : {
+      "PreToolUse" : [
+         {
+            "hooks" : [
+               {
+                  "command" : "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-rm.sh\"",
+                  "type" : "command"
+               }
+            ],
+            "matcher" : "Bash"
+         },
+         {
+            "hooks" : [
+               {
+                  "command" : "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-secret.sh\"",
+                  "type" : "command"
+               }
+            ],
+            "matcher" : "Bash"
+         }
+      ]
+   },
    "includeCoAuthoredBy" : false,
    "permissions" : {
       "allow" : [
@@ -51,7 +73,13 @@
          "Bash(rm -rf:*)",
          "Bash(git push --force:*)",
          "Read(~/.ssh/**)",
-         "Read(./.env)"
+         "Read(./.env)",
+         "Bash(rm -rf /)",
+         "Bash(rm -rf ~)",
+         "Bash(rm -rf $HOME)",
+         "Bash(rm -fr /)",
+         "Bash(rm -fr ~)",
+         "Bash(rm -fr $HOME)"
       ]
    }
 }

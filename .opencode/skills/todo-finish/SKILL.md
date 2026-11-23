@@ -1,6 +1,6 @@
 ---
 name: todo-finish
-description: TODO の実装後に、AGENTS.md 更新→README 更新→commit→バージョン更新をまとめて行う
+description: TODO 実装後に AGENTS.md・README 更新、commit、バージョン更新をまとめて行う
 ---
 
 ## バージョン指定
@@ -10,8 +10,8 @@ $ARGUMENTS
 !`git status --short`
 
 ## 手順
-次の順に Skill ツールで実行する。
-1. `update-agents-md`: AGENTS.md を更新する(commit はしない)
+次の順に実行する(2〜4 は Skill ツールで実行する)。
+1. AGENTS.md を更新する(commit はしない)
 2. `readme-update`: README.md を更新する(commit はしない)
 3. `git-commit`: 1〜2 を含む未コミットの変更を commit する
 4. `version-up`: バージョンを更新して commit する。バージョン指定があれば引数として渡す

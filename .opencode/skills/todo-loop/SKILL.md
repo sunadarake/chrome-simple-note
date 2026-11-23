@@ -1,6 +1,6 @@
 ---
 name: todo-loop
-description: 未完了のTODOを1件ずつ、実装→AGENTS.md更新→commit の順に繰り返す
+description: 未完了の TODO を1件ずつ、実装→AGENTS.md 更新→commit する
 ---
 
 ## 件数
@@ -13,7 +13,7 @@ $ARGUMENTS
 1. 上記一覧が空なら、未完了の TODO はないと報告して終了する
 2. 次を1サイクルとして、件数(指定がなければ未完了がなくなるまで)だけ繰り返す
    1. Skill ツールで `todo-next` を実行し、未完了で番号が最小の TODO を1件実装する
-   2. Skill ツールで `update-agents-and-git` を実行し、AGENTS.md の更新と git commit をまとめて行う
+   2. Skill ツールで `update-agents-md` を実行し、AGENTS.md の更新と git commit をまとめて行う
 3. 一覧を取り直し、次の TODO があれば手順2へ戻る
 
 ## 止める条件

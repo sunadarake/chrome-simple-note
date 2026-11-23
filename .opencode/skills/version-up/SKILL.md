@@ -7,10 +7,10 @@ description: バージョンを更新してgit commitする
 !`git status --short`
 
 ## タグ
-!`git tag --sort=-v:refname`
+!`git tag --sort=-v:refname | head -5`
 
 ## 最近のコミット
-!`git log --oneline -30`
+!`git log --oneline -10`
 
 ## 引数
 $ARGUMENTS
@@ -34,7 +34,11 @@ $ARGUMENTS
    - patch: バグ修正、リファクタ、docs、chore のみ
    - 迷う場合は低い方にする。変更が1件もなければ更新せず報告して止める
 5. 同じ値を持つ他のバージョン記載(`package-lock.json` の先頭の `version`、`__version__`、`#define *_VERSION`、Perl の `$VERSION` など)も合わせて更新する
-6. バージョンのファイルだけを `git add` して commit する
+6. バージョンのファイルだけを `git add` し、`git commit -q` でコミットする
+
+## ログ
+- 正常時は出力を小さくし、成功時の詳細は表示しない
+- 失敗したときだけエラー内容を表示する
 
 ## コミットメッセージ
 - 日本語で簡潔に書く。1行目は `chore: バージョンを X.Y.Z に更新`
