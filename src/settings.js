@@ -5,9 +5,12 @@ export const FONT_SIZE_RANGE = { min: 12, max: 24 };
 export const TITLE_LENGTH_RANGE = { min: 10, max: 100 };
 
 /**
+ * @typedef {{ normal: boolean, secret: boolean }} PerKindBoolean
+ * @typedef {{ normal: number, secret: number }} PerKindNumber
  * @typedef {object} Settings
- * @property {boolean} autoSave
- * @property {number} autoSaveDelayMs
+ * @property {PerKindBoolean} autoSave
+ * @property {PerKindNumber} autoSaveDelayMs
+ * @property {PerKindBoolean} confirmDelete
  * @property {number} fontSize
  * @property {number} titleLength タイトルにする本文の先頭の文字数
  * @property {'light' | 'dark'} theme
@@ -15,8 +18,9 @@ export const TITLE_LENGTH_RANGE = { min: 10, max: 100 };
 
 /** @type {Settings} */
 export const DEFAULT_SETTINGS = {
-  autoSave: false,
-  autoSaveDelayMs: 1000,
+  autoSave: { normal: false, secret: false },
+  autoSaveDelayMs: { normal: 1000, secret: 1000 },
+  confirmDelete: { normal: true, secret: true },
   fontSize: 16,
   titleLength: 50,
   theme: 'light',
@@ -34,6 +38,48 @@ function clampNumber(value, range, fallback) {
 }
 
 /**
+ * メモ種別ごとの真偽値。旧形式の boolean は通常メモに引き継ぐ
+ * @param {unknown} value
+ * @param {PerKindBoolean} fallback
+ * @returns {PerKindBoolean}
+ */
+function booleansPerKind(value, fallback) {
+  if (typeof value === 'boolean') {
+    return { normal: value, secret: fallback.secret };
+  }
+  const saved = /** @type {Record<string, unknown>} */ (
+    value !== null && typeof value === 'object' ? value : {}
+  );
+  return {
+    normal: typeof saved.normal === 'boolean' ? saved.normal : fallback.normal,
+    secret: typeof saved.secret === 'boolean' ? saved.secret : fallback.secret,
+  };
+}
+
+/**
+ * メモ種別ごとの数値。旧形式の number は通常メモに引き継ぐ
+ * @param {unknown} value
+ * @param {{min: number, max: number}} range
+ * @param {PerKindNumber} fallback
+ * @returns {PerKindNumber}
+ */
+function numbersPerKind(value, range, fallback) {
+  if (typeof value === 'number') {
+    return {
+      normal: clampNumber(value, range, fallback.normal),
+      secret: fallback.secret,
+    };
+  }
+  const saved = /** @type {Record<string, unknown>} */ (
+    value !== null && typeof value === 'object' ? value : {}
+  );
+  return {
+    normal: clampNumber(saved.normal, range, fallback.normal),
+    secret: clampNumber(saved.secret, range, fallback.secret),
+  };
+}
+
+/**
  * 保存値が壊れていても動くよう、項目ごとに検証して既定値で補う
  * @param {Pick<Storage, 'getItem'>} storage
  * @returns {Settings}
@@ -48,14 +94,15 @@ export function loadSettings(storage) {
     // 壊れた JSON は、すべて既定値で動く
   }
   return {
-    autoSave:
-      typeof saved.autoSave === 'boolean'
-        ? saved.autoSave
-        : DEFAULT_SETTINGS.autoSave,
-    autoSaveDelayMs: clampNumber(
+    autoSave: booleansPerKind(saved.autoSave, DEFAULT_SETTINGS.autoSave),
+    autoSaveDelayMs: numbersPerKind(
       saved.autoSaveDelayMs,
       AUTO_SAVE_DELAY_RANGE,
       DEFAULT_SETTINGS.autoSaveDelayMs,
+    ),
+    confirmDelete: booleansPerKind(
+      saved.confirmDelete,
+      DEFAULT_SETTINGS.confirmDelete,
     ),
     fontSize: clampNumber(
       saved.fontSize,

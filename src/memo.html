@@ -86,19 +86,50 @@
           </section>
           <section class="settings-section">
             <h2>自動保存</h2>
+            <div class="settings-kind">
+              <div class="settings-kind-title">通常メモ</div>
+              <label class="settings-row">
+                <input type="checkbox" class="normal-auto-save-input" />
+                入力が止まったら自動で保存する
+              </label>
+              <label class="settings-row">
+                保存までの時間
+                <select class="normal-auto-save-delay-input">
+                  <option value="500">0.5秒</option>
+                  <option value="1000">1秒</option>
+                  <option value="2000">2秒</option>
+                  <option value="3000">3秒</option>
+                  <option value="5000">5秒</option>
+                </select>
+              </label>
+            </div>
+            <div class="settings-kind">
+              <div class="settings-kind-title">シークレットメモ</div>
+              <label class="settings-row">
+                <input type="checkbox" class="secret-auto-save-input" />
+                入力が止まったら自動で保存する
+              </label>
+              <label class="settings-row">
+                保存までの時間
+                <select class="secret-auto-save-delay-input">
+                  <option value="500">0.5秒</option>
+                  <option value="1000">1秒</option>
+                  <option value="2000">2秒</option>
+                  <option value="3000">3秒</option>
+                  <option value="5000">5秒</option>
+                </select>
+              </label>
+            </div>
+          </section>
+          <section class="settings-section">
+            <h2>削除の確認</h2>
             <label class="settings-row">
-              <input type="checkbox" class="auto-save-input" />
-              入力が止まったら自動で保存する
+              <input type="checkbox" class="normal-confirm-delete-input" />
+              通常メモを削除する前に確認する
             </label>
             <label class="settings-row">
-              保存までの時間
-              <select class="auto-save-delay-input">
-                <option value="500">0.5秒</option>
-                <option value="1000">1秒</option>
-                <option value="2000">2秒</option>
-                <option value="3000">3秒</option>
-                <option value="5000">5秒</option>
-              </select>
+              <input type="checkbox" class="secret-confirm-delete-input" />
+              シークレットメモを削除する前に確認する
             </label>
           </section>
           <section class="settings-section">

@@ -63,11 +63,23 @@ export function initMemoApp({
   const importBtn = query('.import-btn');
   const deleteAllBtn = query('.delete-all-btn');
   const importInput = /** @type {HTMLInputElement} */ (query('.import-input'));
-  const autoSaveInput = /** @type {HTMLInputElement} */ (
-    query('.auto-save-input')
+  const normalAutoSaveInput = /** @type {HTMLInputElement} */ (
+    query('.normal-auto-save-input')
   );
-  const autoSaveDelayInput = /** @type {HTMLSelectElement} */ (
-    query('.auto-save-delay-input')
+  const normalAutoSaveDelayInput = /** @type {HTMLSelectElement} */ (
+    query('.normal-auto-save-delay-input')
+  );
+  const secretAutoSaveInput = /** @type {HTMLInputElement} */ (
+    query('.secret-auto-save-input')
+  );
+  const secretAutoSaveDelayInput = /** @type {HTMLSelectElement} */ (
+    query('.secret-auto-save-delay-input')
+  );
+  const normalConfirmDeleteInput = /** @type {HTMLInputElement} */ (
+    query('.normal-confirm-delete-input')
+  );
+  const secretConfirmDeleteInput = /** @type {HTMLInputElement} */ (
+    query('.secret-confirm-delete-input')
   );
   const fontSizeInput = /** @type {HTMLSelectElement} */ (
     query('.font-size-input')
@@ -224,7 +236,9 @@ export function initMemoApp({
   function deleteMemo() {
     const memo = memos.find((m) => m.id === currentId);
     if (!memo) return;
+    const kind = memo.secret ? 'secret' : 'normal';
     if (
+      settings.confirmDelete[kind] &&
       !confirm(`"${memo.title || '無題のメモ'}" を削除します。よろしいですか？`)
     ) {
       return;
@@ -264,9 +278,15 @@ export function initMemoApp({
     scheduleAutoSave();
   }
 
+  function currentKind() {
+    const memo = memos.find((m) => m.id === currentId);
+    return memo?.secret ? 'secret' : 'normal';
+  }
+
   function scheduleAutoSave() {
     clearTimeout(autoSaveTimer);
-    if (!settings.autoSave) return;
+    const kind = currentKind();
+    if (!settings.autoSave[kind]) return;
     autoSaveTimer = setTimeout(() => {
       // 本文もタイトルも空のメモは保存しない
       if (
@@ -277,7 +297,7 @@ export function initMemoApp({
       ) {
         persistCurrentContent();
       }
-    }, settings.autoSaveDelayMs);
+    }, settings.autoSaveDelayMs[kind]);
   }
 
   function copyContent() {
@@ -312,14 +332,19 @@ export function initMemoApp({
   function applySettings() {
     container.dataset.theme = settings.theme;
     container.style.setProperty('--editor-font-size', `${settings.fontSize}px`);
-    autoSaveDelayInput.disabled = !settings.autoSave;
+    normalAutoSaveDelayInput.disabled = !settings.autoSave.normal;
+    secretAutoSaveDelayInput.disabled = !settings.autoSave.secret;
     // 文字サイズが変わると折り返しも変わるので、表示層を作り直す
     updateHighlight();
   }
 
   function showSettings() {
-    autoSaveInput.checked = settings.autoSave;
-    autoSaveDelayInput.value = String(settings.autoSaveDelayMs);
+    normalAutoSaveInput.checked = settings.autoSave.normal;
+    normalAutoSaveDelayInput.value = String(settings.autoSaveDelayMs.normal);
+    secretAutoSaveInput.checked = settings.autoSave.secret;
+    secretAutoSaveDelayInput.value = String(settings.autoSaveDelayMs.secret);
+    normalConfirmDeleteInput.checked = settings.confirmDelete.normal;
+    secretConfirmDeleteInput.checked = settings.confirmDelete.secret;
     fontSizeInput.value = String(settings.fontSize);
     titleLengthInput.value = String(settings.titleLength);
     themeInput.value = settings.theme;
@@ -335,12 +360,16 @@ export function initMemoApp({
   }
 
   function changeSettings() {
-    settings.autoSave = autoSaveInput.checked;
-    settings.autoSaveDelayMs = Number(autoSaveDelayInput.value);
+    settings.autoSave.normal = normalAutoSaveInput.checked;
+    settings.autoSave.secret = secretAutoSaveInput.checked;
+    settings.autoSaveDelayMs.normal = Number(normalAutoSaveDelayInput.value);
+    settings.autoSaveDelayMs.secret = Number(secretAutoSaveDelayInput.value);
+    settings.confirmDelete.normal = normalConfirmDeleteInput.checked;
+    settings.confirmDelete.secret = secretConfirmDeleteInput.checked;
     settings.fontSize = Number(fontSizeInput.value);
     settings.titleLength = Number(titleLengthInput.value);
     settings.theme = themeInput.value === 'dark' ? 'dark' : 'light';
-    if (!settings.autoSave) clearTimeout(autoSaveTimer);
+    if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
     saveSettings(storage, settings);
     applySettings();
     retitleAll();
@@ -421,8 +450,12 @@ export function initMemoApp({
   );
   settingsCloseBtn.addEventListener('click', () => setSettingsOpen(false));
   for (const input of [
-    autoSaveInput,
-    autoSaveDelayInput,
+    normalAutoSaveInput,
+    normalAutoSaveDelayInput,
+    secretAutoSaveInput,
+    secretAutoSaveDelayInput,
+    normalConfirmDeleteInput,
+    secretConfirmDeleteInput,
     fontSizeInput,
     titleLengthInput,
     themeInput,

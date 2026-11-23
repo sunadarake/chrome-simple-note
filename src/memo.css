@@ -279,6 +279,21 @@ body {
   color: #888;
 }
 
+/* 自動保存の設定を通常メモとシークレットメモで分けて見せる */
+.settings-kind {
+  margin-bottom: 12px;
+}
+
+.settings-kind:last-child {
+  margin-bottom: 0;
+}
+
+.settings-kind-title {
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #999;
+}
+
 /* ファイルをドラッグしている間、ドロップできる範囲を示す */
 .settings-panel.drop-active {
   outline: 2px dashed #999;
@@ -821,7 +836,9 @@ body:has(.container[data-theme='dark']) {
 }
 
 .container[data-theme='dark'] .settings-section h2,
-.main-content.secret .settings-section h2 {
+.container[data-theme='dark'] .settings-kind-title,
+.main-content.secret .settings-section h2,
+.main-content.secret .settings-kind-title {
   color: #9aa0a6;
 }
 

@@ -20,8 +20,9 @@ describe('settings', () => {
   it('保存した設定を読み込める', () => {
     const storage = fakeStorage();
     const settings = {
-      autoSave: false,
-      autoSaveDelayMs: 2000,
+      autoSave: { normal: true, secret: false },
+      autoSaveDelayMs: { normal: 2000, secret: 500 },
+      confirmDelete: { normal: true, secret: false },
       fontSize: 20,
       titleLength: 50,
       theme: 'dark',
@@ -46,16 +47,46 @@ describe('settings', () => {
 
   it('範囲外の数値は範囲内に丸める', () => {
     const loaded = loadSettings(
-      fakeStorage(JSON.stringify({ autoSaveDelayMs: 100, fontSize: 99 })),
+      fakeStorage(
+        JSON.stringify({
+          autoSaveDelayMs: { normal: 100, secret: 9999 },
+          fontSize: 99,
+        }),
+      ),
     );
-    expect(loaded.autoSaveDelayMs).toBe(500);
+    expect(loaded.autoSaveDelayMs).toEqual({ normal: 500, secret: 5000 });
     expect(loaded.fontSize).toBe(24);
   });
 
-  it('既定は自動保存オフ、タイトルは 50 文字', () => {
+  it('既定は自動保存オフ、削除確認オン、タイトルは 50 文字', () => {
     const loaded = loadSettings(fakeStorage());
-    expect(loaded.autoSave).toBe(false);
+    expect(loaded.autoSave).toEqual({ normal: false, secret: false });
+    expect(loaded.confirmDelete).toEqual({ normal: true, secret: true });
     expect(loaded.titleLength).toBe(50);
+  });
+
+  it('旧形式の自動保存設定は通常メモに引き継ぎ、シークレットは既定にする', () => {
+    const loaded = loadSettings(
+      fakeStorage(JSON.stringify({ autoSave: true, autoSaveDelayMs: 2000 })),
+    );
+    expect(loaded.autoSave).toEqual({ normal: true, secret: false });
+    expect(loaded.autoSaveDelayMs).toEqual({ normal: 2000, secret: 1000 });
+    expect(loaded.confirmDelete).toEqual({ normal: true, secret: true });
+  });
+
+  it('新しい形式で片方だけ欠けていても、その項目だけ既定値で補う', () => {
+    const loaded = loadSettings(
+      fakeStorage(
+        JSON.stringify({
+          autoSave: { normal: true },
+          autoSaveDelayMs: { secret: 3000 },
+          confirmDelete: { secret: false },
+        }),
+      ),
+    );
+    expect(loaded.autoSave).toEqual({ normal: true, secret: false });
+    expect(loaded.autoSaveDelayMs).toEqual({ normal: 1000, secret: 3000 });
+    expect(loaded.confirmDelete).toEqual({ normal: true, secret: false });
   });
 
   it('タイトルの文字数は 10〜100 に丸める', () => {
@@ -70,7 +101,20 @@ describe('settings', () => {
     const loaded = loadSettings(
       fakeStorage(JSON.stringify({ autoSaveDelayMs: '1000', fontSize: null })),
     );
-    expect(loaded.autoSaveDelayMs).toBe(DEFAULT_SETTINGS.autoSaveDelayMs);
+    expect(loaded.autoSaveDelayMs).toEqual(DEFAULT_SETTINGS.autoSaveDelayMs);
     expect(loaded.fontSize).toBe(DEFAULT_SETTINGS.fontSize);
+  });
+
+  it('真偽値でない自動保存・削除確認は既定値にする', () => {
+    const loaded = loadSettings(
+      fakeStorage(
+        JSON.stringify({
+          autoSave: { normal: 'yes', secret: true },
+          confirmDelete: 'no',
+        }),
+      ),
+    );
+    expect(loaded.autoSave).toEqual({ normal: false, secret: true });
+    expect(loaded.confirmDelete).toEqual({ normal: true, secret: true });
   });
 });

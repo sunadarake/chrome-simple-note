@@ -1,0 +1,45 @@
+# 自動保存と削除確認を通常メモ・シークレットメモごとに設定する
+
+## 概要
+今は自動保存のオン／オフ・間隔と、削除時の確認がメモの種類に関係なく1つだけになっている。通常メモとシークレットメモで別々に、自動保存のオン／オフ・間隔と削除確認の有無を設定できるようにする。シークレットメモはタブを閉じると消えるため、通常メモと違う保存・削除の扱いを選べるようにするのが目的。
+
+## 調査結果
+- `src/settings.js` の `Settings`（7〜14行）は `autoSave: boolean` と `autoSaveDelayMs: number` を1組だけ持つ。既定値は 16〜23 行、検証は `loadSettings` 41〜72 行、保存は `saveSettings` 78〜80 行。`AUTO_SAVE_DELAY_RANGE` は 500〜5000ms。
+- `src/memo.js` は起動時に `loadSettings(storage)` を1回呼ぶ（81行）。自動保存は `scheduleAutoSave`（267〜281行）が `settings.autoSave` と `settings.autoSaveDelayMs` を直接見ている。`applySettings`（312〜318行）は `settings.autoSave` で間隔の選択欄を無効化している。
+- 設定パネルの表示・反映は `showSettings`（320〜327行）と `changeSettings`（337〜349行）。今は自動保存のチェックと間隔の選択が1組だけ。
+- `src/memo.html` の自動保存セクションは 87〜103 行。削除確認の設定 UI はまだない。
+- 削除は `deleteMemo`（`src/memo.js` 224〜236行）が常に `confirm` を呼ぶ。全メモ削除の `deleteAllMemos`（238〜259行）も常に確認する。
+- 現在のメモがシークレットかどうかは `memo.secret` で分かる（`loadMemo` 115〜131行で `mainContent.classList.toggle('secret', ...)`）。
+- 設定の保存先は `localStorage` の `settings` キー（`src/settings.js` 1行）。シークレットメモの本文は `sessionStorage` だが、設定は共通の `localStorage` に置かれている。
+- 既存テストは `src/settings.test.js` が1組の設定形を前提にしている。`src/memo.test.js` の `start()` は `{ autoSave: true, titleLength: 30 }` を保存して自動保存を有効にしている。
+
+## 実装計画
+- [x] ステップ1: `src/settings.js` の設定形をメモ種別ごとに分ける。例として `autoSave: { normal, secret }`、`autoSaveDelayMs: { normal, secret }`、`confirmDelete: { normal, secret }` にし、`DEFAULT_SETTINGS` は通常・シークレットとも自動保存オフ・1000ms、削除確認は両方 true にする。`loadSettings` は各項目を boolean / 範囲内の数値として検証し、壊れた値は既定値に補う（`src/settings.js`）。
+- [x] ステップ2: 旧形式（`autoSave: boolean` と `autoSaveDelayMs: number`）を読み込んだら、その値を通常メモの設定として引き継ぎ、シークレットメモは既定値にする。新形式が一部だけ欠けている場合も、項目ごとに既定値で補う（`src/settings.js`）。
+- [x] ステップ3: `src/memo.html` の自動保存セクションを、通常メモ用とシークレットメモ用の2組（チェックボックス＋間隔の選択）に分ける。削除確認のセクションを追加し、通常メモ用・シークレットメモ用のチェックボックスを置く。クラス名は既存の `settings-row` に合わせる（`src/memo.html`）。
+- [x] ステップ4: `src/memo.js` で現在のメモの種別（`memo.secret`）に応じて、自動保存のオン／オフ・間隔と削除確認を切り替える。`scheduleAutoSave`、`applySettings`、`showSettings`、`changeSettings`、`deleteMemo` を種別ごとの設定に合わせる。全メモ削除は回答どおり常に確認する（`src/memo.js`）。
+- [x] ステップ5: 2組の設定が読みやすいよう、必要最小限の CSS を `src/memo.css` に足す。ダークテーマ・シークレットメモの既存の設定パネル配色になじませる（`src/memo.css`）。
+- [x] ステップ6: `src/settings.test.js` に旧形式の移行・新しい設定形の検証・範囲の丸めを追加する。`src/memo.test.js` に、通常メモとシークレットメモで自動保存のオン／オフ・間隔が別々に効くこと、削除確認の有無が種別ごとに効くこと、全メモ削除は設定に関係なく確認することを追加する（`src/settings.test.js`、`src/memo.test.js`）。
+- [x] ステップ7: `AGENTS.md` の設定の説明と `README.md` の仕様表を、メモ種別ごとの自動保存・削除確認に合わせて更新する（`AGENTS.md`、`README.md`）。
+
+## テスト・確認方法
+- [x] `npm test` / `npm run lint` / `npm run typecheck` / `npx prettier --check .` が通る
+- [x] 旧形式の設定（`autoSave: true, autoSaveDelayMs: 2000`）を読み込むと、通常メモだけオン・2000ms になり、シークレットメモはオフ・1000ms になる
+- [x] 通常メモで自動保存オン・シークレットメモでオフにすると、種別ごとに自動保存の有無が変わる
+- [x] 通常メモとシークレットメモで間隔を変えると、それぞれの間隔で保存される
+- [x] 削除確認をオフにした種別のメモだけ、確認なしで削除される
+- [x] 「全メモ削除」は通常メモの削除確認設定をオフにしても確認する
+- [ ] `chrome://extensions` で読み込み、設定パネルで2組の設定を変更し、リロード後も保持されることを目視確認する
+- [ ] 通常メモ・シークレットメモ・ダークテーマで設定パネルの表示が崩れないことを目視確認する
+
+## 決定事項
+- 既存の自動保存設定（`autoSave` / `autoSaveDelayMs`）は通常メモに引き継ぎ、シークレットメモは既定（オフ・1秒）から始める。
+- 削除確認の既定値は通常メモ・シークレットメモとも「確認する」にする（現状維持）。
+- 設定パネルの「全メモ削除」は、通常メモの削除確認設定に関係なく常に確認する。
+- シークレットメモ用の設定も、他の設定と同じく `localStorage` の `settings` キーに保存する（メモ本文ではないため）。
+
+## 懸念点・未決事項
+- `deleteMemo` は後続の TODO（029）で Delete キーからも呼ばれる。削除確認をオフにすると、入力中に Delete キーを押しただけでメモが消えるため、既定の「確認する」を維持する前提で進める。
+- 旧形式からの移行は読み込み時だけ行う。新しい形式で保存し直すと旧キーは残らないため、古いバージョンに戻した場合は設定が既定値に見える。
+- 設定は共通の `localStorage` にあるため、シークレットメモ用の設定もタブを閉じたあとに残る。設定値自体は秘密情報ではない想定。
+- TODO 029（ショートカット）はこの TODO の削除確認設定を利用するため、先にこの TODO を完了させる。

@@ -34,7 +34,10 @@ const memo = (id, content) => ({
 // 既定値そのものを見るテストは settings: null で始める
 const start = ({
   memos,
-  settings = { autoSave: true, titleLength: 30 },
+  settings = {
+    autoSave: { normal: true, secret: true },
+    titleLength: 30,
+  },
   confirm = () => true,
   copy = () => {},
   download = () => {},
@@ -416,9 +419,12 @@ describe('設定パネル', () => {
 
   it('保存値がなければ既定値を表示する', () => {
     start({ settings: null });
-    expect(q('.auto-save-input').checked).toBe(false);
-    expect(q('.title-length-input').value).toBe('50');
-    expect(q('.auto-save-delay-input').value).toBe('1000');
+    expect(q('.normal-auto-save-input').checked).toBe(false);
+    expect(q('.normal-auto-save-delay-input').value).toBe('1000');
+    expect(q('.secret-auto-save-input').checked).toBe(false);
+    expect(q('.secret-auto-save-delay-input').value).toBe('1000');
+    expect(q('.normal-confirm-delete-input').checked).toBe(true);
+    expect(q('.secret-confirm-delete-input').checked).toBe(true);
     expect(q('.font-size-input').value).toBe('16');
     expect(q('.theme-input').value).toBe('light');
     expect(q('.container').dataset.theme).toBe('light');
@@ -426,12 +432,13 @@ describe('設定パネル', () => {
 
   it('変更した設定を保存し、再起動しても保たれる', () => {
     const storage = start({ settings: null });
-    change('.auto-save-delay-input', '3000');
+    change('.normal-auto-save-delay-input', '3000');
     change('.font-size-input', '20');
     change('.theme-input', 'dark');
     expect(settingsOf(storage)).toEqual({
-      autoSave: false,
-      autoSaveDelayMs: 3000,
+      autoSave: { normal: false, secret: false },
+      autoSaveDelayMs: { normal: 3000, secret: 1000 },
+      confirmDelete: { normal: true, secret: true },
       fontSize: 20,
       titleLength: 50,
       theme: 'dark',
@@ -445,7 +452,7 @@ describe('設定パネル', () => {
       copy: () => {},
       download: () => {},
     });
-    expect(q('.auto-save-delay-input').value).toBe('3000');
+    expect(q('.normal-auto-save-delay-input').value).toBe('3000');
     expect(q('.font-size-input').value).toBe('20');
     expect(q('.container').dataset.theme).toBe('dark');
   });
@@ -453,8 +460,8 @@ describe('設定パネル', () => {
   describe('自動保存', () => {
     it('オフにすると入力しても保存しないが、保存ボタンでは保存する', () => {
       const storage = start({ memos: [memo(1, 'old')] });
-      change('.auto-save-input', false);
-      expect(q('.auto-save-delay-input').disabled).toBe(true);
+      change('.normal-auto-save-input', false);
+      expect(q('.normal-auto-save-delay-input').disabled).toBe(true);
       typeContent('typed');
       vi.advanceTimersByTime(10000);
       expect(stored(storage)[0].content).toBe('old');
@@ -465,16 +472,16 @@ describe('設定パネル', () => {
     it('入力後にオフにすると、待っていた自動保存も止まる', () => {
       const storage = start({ memos: [memo(1, 'old')] });
       typeContent('typed');
-      change('.auto-save-input', false);
+      change('.normal-auto-save-input', false);
       vi.advanceTimersByTime(10000);
       expect(stored(storage)[0].content).toBe('old');
     });
 
     it('オンに戻すと自動保存が再開する', () => {
       const storage = start({ memos: [memo(1, 'old')] });
-      change('.auto-save-input', false);
-      change('.auto-save-input', true);
-      expect(q('.auto-save-delay-input').disabled).toBe(false);
+      change('.normal-auto-save-input', false);
+      change('.normal-auto-save-input', true);
+      expect(q('.normal-auto-save-delay-input').disabled).toBe(false);
       typeContent('typed');
       vi.advanceTimersByTime(1000);
       expect(stored(storage)[0].content).toBe('typed');
@@ -482,12 +489,79 @@ describe('設定パネル', () => {
 
     it('保存までの時間を変えられる', () => {
       const storage = start({ memos: [memo(1, 'old')] });
-      change('.auto-save-delay-input', '3000');
+      change('.normal-auto-save-delay-input', '3000');
       typeContent('typed');
       vi.advanceTimersByTime(2999);
       expect(stored(storage)[0].content).toBe('old');
       vi.advanceTimersByTime(1);
       expect(stored(storage)[0].content).toBe('typed');
+    });
+
+    it('通常メモとシークレットメモでオン／オフを別々に設定できる', () => {
+      const storage = start({ memos: [memo(1, 'old')] });
+      change('.normal-auto-save-input', false);
+      typeContent('normal typed');
+      vi.advanceTimersByTime(10000);
+      expect(stored(storage)[0].content).toBe('old');
+
+      q('.secret-memo-btn').click();
+      typeContent('secret typed');
+      vi.advanceTimersByTime(1000);
+      expect(JSON.parse(storage.session.data.memos)[0].content).toBe(
+        'secret typed',
+      );
+    });
+
+    it('通常メモとシークレットメモで保存までの時間を別々に変えられる', () => {
+      const storage = start({ memos: [memo(1, 'old')] });
+      change('.secret-auto-save-delay-input', '3000');
+      q('.secret-memo-btn').click();
+      typeContent('secret typed');
+      vi.advanceTimersByTime(2999);
+      expect(storage.session.data.memos).toBeUndefined();
+      vi.advanceTimersByTime(1);
+      expect(JSON.parse(storage.session.data.memos)[0].content).toBe(
+        'secret typed',
+      );
+    });
+  });
+
+  describe('削除の確認', () => {
+    it('確認をオフにした種別だけ確認なしで削除する', () => {
+      const confirm = vi.fn(() => true);
+      const storage = start({ memos: [memo(2, 'a'), memo(1, 'b')], confirm });
+      change('.normal-confirm-delete-input', false);
+      q('.delete-btn').click();
+      expect(confirm).not.toHaveBeenCalled();
+      expect(stored(storage).map((m) => m.id)).toEqual([1]);
+
+      q('.secret-memo-btn').click();
+      typeContent('secret');
+      q('.save-btn').click();
+      confirm.mockClear();
+      q('.delete-btn').click();
+      expect(confirm).toHaveBeenCalledOnce();
+    });
+
+    it('シークレットメモの確認だけをオフにできる', () => {
+      const confirm = vi.fn(() => false);
+      const storage = start({ memos: [memo(1, 'a')], confirm });
+      q('.secret-memo-btn').click();
+      typeContent('secret');
+      q('.save-btn').click();
+      change('.secret-confirm-delete-input', false);
+      q('.delete-btn').click();
+      expect(confirm).not.toHaveBeenCalled();
+      expect(JSON.parse(storage.session.data.memos)).toEqual([]);
+    });
+
+    it('全メモ削除は通常メモの削除確認をオフにしても確認する', () => {
+      const confirm = vi.fn(() => true);
+      const storage = start({ memos: [memo(1, 'a')], confirm });
+      change('.normal-confirm-delete-input', false);
+      q('.delete-all-btn').click();
+      expect(confirm).toHaveBeenCalledOnce();
+      expect(stored(storage)).toEqual([]);
     });
   });
 
@@ -930,8 +1004,8 @@ describe('手動タイトル', () => {
 
   it('自動保存オフでは、保存ボタンを押すまで保存しない', () => {
     const storage = start({ memos: [memo(1, '本文')] });
-    q('.auto-save-input').checked = false;
-    q('.auto-save-input').dispatchEvent(new Event('change'));
+    q('.normal-auto-save-input').checked = false;
+    q('.normal-auto-save-input').dispatchEvent(new Event('change'));
     edit('手動', 'Enter');
     vi.advanceTimersByTime(10000);
     expect(stored(storage)[0].customTitle).toBeUndefined();
@@ -953,7 +1027,10 @@ describe('手動タイトル', () => {
 
   it('本文が空でも、保存ボタンで手動タイトルを保存する', () => {
     const storage = start({
-      settings: { autoSave: false, titleLength: 30 },
+      settings: {
+        autoSave: { normal: false, secret: false },
+        titleLength: 30,
+      },
     });
     edit('手動', 'Enter');
     vi.advanceTimersByTime(10000);
