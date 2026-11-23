@@ -621,9 +621,5 @@ export function initMemoApp({
   renderHelp();
   showSettings();
   retitleAll();
-  if (memos.length > 0) {
-    loadMemo(memos[0].id);
-  } else {
-    createNewMemo(false);
-  }
+  selectFirstMemoOrCreate();
 }
