@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { initMemoApp } from './memo.js';
+import { DEFAULT_SETTINGS } from './settings.js';
 
 const html = readFileSync('src/memo.html', 'utf-8');
 const body = html.match(/<body>([\s\S]*)<\/body>/)[1];
@@ -558,11 +559,23 @@ describe('設定パネル', () => {
     expect(q('.container').dataset.theme).toBe('light');
   });
 
-  it('変更した設定を保存し、再起動しても保たれる', () => {
+  it('変更しただけでは保存せず、すぐ画面には反映する', () => {
+    const storage = start({ settings: null });
+    change('.font-size-input', '20');
+    change('.theme-input', 'dark');
+    expect(storage.data.settings).toBeUndefined();
+    expect(q('.container').style.getPropertyValue('--editor-font-size')).toBe(
+      '20px',
+    );
+    expect(q('.container').dataset.theme).toBe('dark');
+  });
+
+  it('変更した設定は保存ボタンで保存し、再起動しても保たれる', () => {
     const storage = start({ settings: null });
     change('.normal-auto-save-delay-input', '3000');
     change('.font-size-input', '20');
     change('.theme-input', 'dark');
+    q('.save-settings-btn').click();
     expect(settingsOf(storage)).toEqual({
       autoSave: { normal: false, secret: false },
       autoSaveDelayMs: { normal: 3000, secret: 1000 },
@@ -583,6 +596,42 @@ describe('設定パネル', () => {
     expect(q('.normal-auto-save-delay-input').value).toBe('3000');
     expect(q('.font-size-input').value).toBe('20');
     expect(q('.container').dataset.theme).toBe('dark');
+  });
+
+  describe('デフォルトに戻す', () => {
+    const customSettings = {
+      autoSave: { normal: true, secret: false },
+      autoSaveDelayMs: { normal: 3000, secret: 2000 },
+      confirmDelete: { normal: false, secret: false },
+      fontSize: 20,
+      titleLength: 10,
+      theme: 'dark',
+    };
+
+    it('確認でキャンセルしたら設定を変えない', () => {
+      const confirm = vi.fn(() => false);
+      const storage = start({ settings: customSettings, confirm });
+      q('.reset-settings-btn').click();
+      expect(confirm).toHaveBeenCalledWith(
+        '設定をデフォルトに戻します。よろしいですか？',
+      );
+      expect(settingsOf(storage)).toEqual(customSettings);
+      expect(q('.font-size-input').value).toBe('20');
+      expect(q('.container').dataset.theme).toBe('dark');
+    });
+
+    it('承諾すると既定値に戻して保存する', () => {
+      const confirm = vi.fn(() => true);
+      const storage = start({ settings: customSettings, confirm });
+      q('.reset-settings-btn').click();
+      expect(confirm).toHaveBeenCalledOnce();
+      expect(settingsOf(storage)).toEqual(DEFAULT_SETTINGS);
+      expect(q('.font-size-input').value).toBe('16');
+      expect(q('.title-length-input').value).toBe('50');
+      expect(q('.theme-input').value).toBe('light');
+      expect(q('.normal-confirm-delete-input').checked).toBe(true);
+      expect(q('.container').dataset.theme).toBe('light');
+    });
   });
 
   describe('自動保存', () => {
@@ -740,6 +789,7 @@ describe('設定パネル', () => {
     it('再起動しても保たれる', () => {
       const storage = start({ memos: [memo(1, long)] });
       change('.title-length-input', '50');
+      q('.save-settings-btn').click();
       document.body.innerHTML = body;
       initMemoApp({
         root: document,

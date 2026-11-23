@@ -9,7 +9,7 @@ import {
   titleFor,
   updateContent,
 } from './memo-store.js';
-import { loadSettings, saveSettings } from './settings.js';
+import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';
 import { SHORTCUTS, initShortcuts } from './shortcuts.js';
 import { loadMemos, saveMemos } from './storage.js';
 
@@ -71,6 +71,8 @@ export function initMemoApp({
   const exportBtn = query('.export-btn');
   const importBtn = query('.import-btn');
   const deleteAllBtn = query('.delete-all-btn');
+  const saveSettingsBtn = query('.save-settings-btn');
+  const resetSettingsBtn = query('.reset-settings-btn');
   const importInput = /** @type {HTMLInputElement} */ (query('.import-input'));
   const normalAutoSaveInput = /** @type {HTMLInputElement} */ (
     query('.normal-auto-save-input')
@@ -449,6 +451,7 @@ export function initMemoApp({
     saveMemos(storage, sessionStorage, memos);
   }
 
+  // 変更はすぐ画面に反映し、保存ボタンで保存先に書く
   function changeSettings() {
     settings.autoSave.normal = normalAutoSaveInput.checked;
     settings.autoSave.secret = secretAutoSaveInput.checked;
@@ -460,11 +463,32 @@ export function initMemoApp({
     settings.titleLength = Number(titleLengthInput.value);
     settings.theme = themeInput.value === 'dark' ? 'dark' : 'light';
     if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
-    saveSettings(storage, settings);
     applySettings();
     retitleAll();
     renderMemoList();
     updateTitleDisplay();
+  }
+
+  function saveSettingsFromPanel() {
+    saveSettings(storage, settings);
+    showLogMessage('設定を保存しました');
+  }
+
+  function resetSettings() {
+    if (!confirm('設定をデフォルトに戻します。よろしいですか？')) return;
+    settings.autoSave = { ...DEFAULT_SETTINGS.autoSave };
+    settings.autoSaveDelayMs = { ...DEFAULT_SETTINGS.autoSaveDelayMs };
+    settings.confirmDelete = { ...DEFAULT_SETTINGS.confirmDelete };
+    settings.fontSize = DEFAULT_SETTINGS.fontSize;
+    settings.titleLength = DEFAULT_SETTINGS.titleLength;
+    settings.theme = DEFAULT_SETTINGS.theme;
+    if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
+    showSettings();
+    retitleAll();
+    renderMemoList();
+    updateTitleDisplay();
+    saveSettings(storage, settings);
+    showLogMessage('設定をデフォルトに戻しました');
   }
 
   /** @param {File[]} files */
@@ -556,6 +580,8 @@ export function initMemoApp({
   ]) {
     input.addEventListener('change', changeSettings);
   }
+  saveSettingsBtn.addEventListener('click', saveSettingsFromPanel);
+  resetSettingsBtn.addEventListener('click', resetSettings);
   exportBtn.addEventListener('click', exportToFile);
   importBtn.addEventListener('click', () => importInput.click());
   deleteAllBtn.addEventListener('click', deleteAllMemos);

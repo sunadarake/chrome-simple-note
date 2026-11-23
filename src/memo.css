@@ -348,6 +348,8 @@ body {
 .export-btn,
 .import-btn,
 .delete-all-btn,
+.save-settings-btn,
+.reset-settings-btn,
 .settings-panel select {
   padding: 6px 12px;
   border: 1px solid #ddd;
@@ -361,7 +363,9 @@ body {
 
 .settings-close-btn:hover,
 .export-btn:hover,
-.import-btn:hover {
+.import-btn:hover,
+.save-settings-btn:hover,
+.reset-settings-btn:hover {
   background: #eee;
 }
 
@@ -374,9 +378,32 @@ body {
   background: #fdedec;
 }
 
+.save-settings-btn {
+  border-color: #27ae60;
+  color: #27ae60;
+}
+
+.save-settings-btn:hover {
+  background: #eafaf1;
+}
+
+.reset-settings-btn {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.reset-settings-btn:hover {
+  background: #fdedec;
+}
+
 .settings-panel select:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .title-display {
@@ -896,10 +923,14 @@ body:has(.container[data-theme='dark']) {
 .container[data-theme='dark'] .settings-close-btn,
 .container[data-theme='dark'] .export-btn,
 .container[data-theme='dark'] .import-btn,
+.container[data-theme='dark'] .save-settings-btn,
+.container[data-theme='dark'] .reset-settings-btn,
 .container[data-theme='dark'] .settings-panel select,
 .main-content.secret .settings-close-btn,
 .main-content.secret .export-btn,
 .main-content.secret .import-btn,
+.main-content.secret .save-settings-btn,
+.main-content.secret .reset-settings-btn,
 .main-content.secret .settings-panel select {
   border-color: #555;
   color: #e0e0e0;
@@ -908,15 +939,41 @@ body:has(.container[data-theme='dark']) {
 .container[data-theme='dark'] .settings-close-btn:hover,
 .container[data-theme='dark'] .export-btn:hover,
 .container[data-theme='dark'] .import-btn:hover,
+.container[data-theme='dark'] .save-settings-btn:hover,
+.container[data-theme='dark'] .reset-settings-btn:hover,
 .main-content.secret .settings-close-btn:hover,
 .main-content.secret .export-btn:hover,
-.main-content.secret .import-btn:hover {
+.main-content.secret .import-btn:hover,
+.main-content.secret .save-settings-btn:hover,
+.main-content.secret .reset-settings-btn:hover {
   background: #3a3d42;
 }
 
 .container[data-theme='dark'] .delete-all-btn:hover,
 .main-content.secret .delete-all-btn:hover {
   background: rgba(231, 76, 60, 0.15);
+}
+
+.container[data-theme='dark'] .save-settings-btn,
+.main-content.secret .save-settings-btn {
+  border-color: #81c995;
+  color: #81c995;
+}
+
+.container[data-theme='dark'] .save-settings-btn:hover,
+.main-content.secret .save-settings-btn:hover {
+  background: rgba(129, 201, 149, 0.15);
+}
+
+.container[data-theme='dark'] .reset-settings-btn,
+.main-content.secret .reset-settings-btn {
+  border-color: #f28b82;
+  color: #f28b82;
+}
+
+.container[data-theme='dark'] .reset-settings-btn:hover,
+.main-content.secret .reset-settings-btn:hover {
+  background: rgba(242, 139, 130, 0.15);
 }
 
 .container[data-theme='dark'] .settings-panel select option,
