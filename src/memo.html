@@ -18,6 +18,14 @@
             ☰
           </button>
           <div class="sidebar-title">SimpleNote</div>
+          <button
+            class="help-btn"
+            aria-label="ヘルプ"
+            title="ヘルプ"
+            aria-expanded="false"
+          >
+            ?
+          </button>
           <input
             type="file"
             class="import-input"
@@ -164,6 +172,25 @@
                 <option value="dark">ダーク</option>
               </select>
             </label>
+          </section>
+        </div>
+        <div class="help-panel" hidden>
+          <div class="settings-header">
+            <div class="settings-title">ヘルプ</div>
+            <button
+              class="help-close-btn settings-close-btn"
+              title="ヘルプを閉じる"
+            >
+              閉じる
+            </button>
+          </div>
+          <section class="settings-section">
+            <h2>キーボードショートカット</h2>
+            <div class="shortcut-list"></div>
+          </section>
+          <section class="settings-section">
+            <h2>バージョン</h2>
+            <p class="help-version"></p>
           </section>
         </div>
         <div class="main-header">

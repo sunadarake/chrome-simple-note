@@ -190,7 +190,8 @@ body {
 }
 
 /* サイドバーの中のボタン */
-.settings-btn {
+.settings-btn,
+.help-btn {
   flex-shrink: 0;
   padding: 6px 10px;
   border-radius: 6px;
@@ -200,14 +201,16 @@ body {
 }
 
 .sidebar-close,
-.settings-btn {
+.settings-btn,
+.help-btn {
   border: none;
   background: transparent;
   color: #333;
 }
 
 .sidebar-close:hover,
-.settings-btn:hover {
+.settings-btn:hover,
+.help-btn:hover {
   background: #eee;
 }
 
@@ -235,11 +238,13 @@ body {
 /* 設定パネル。開いている間はタイトル行とエディタの代わりに出る */
 .main-header[hidden],
 .editor[hidden],
-.settings-panel[hidden] {
+.settings-panel[hidden],
+.help-panel[hidden] {
   display: none;
 }
 
-.settings-panel {
+.settings-panel,
+.help-panel {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -292,6 +297,36 @@ body {
   margin-bottom: 6px;
   font-size: 13px;
   color: #999;
+}
+
+/* ヘルプ画面。設定パネルと同じ見出し・セクションを使う */
+.shortcut-row {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.shortcut-row:last-child {
+  border-bottom: none;
+}
+
+.shortcut-keys {
+  flex: 0 0 80px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #333;
+}
+
+.shortcut-description {
+  font-size: 14px;
+  color: #555;
+}
+
+.help-version {
+  margin: 0;
+  font-size: 15px;
+  color: #333;
 }
 
 /* ファイルをドラッグしている間、ドロップできる範囲を示す */
@@ -763,12 +798,14 @@ body:has(.container[data-theme='dark']) {
 
 .container[data-theme='dark'] .sidebar-title,
 .container[data-theme='dark'] .sidebar-close,
-.container[data-theme='dark'] .settings-btn {
+.container[data-theme='dark'] .settings-btn,
+.container[data-theme='dark'] .help-btn {
   color: #e0e0e0;
 }
 
 .container[data-theme='dark'] .sidebar-close:hover,
 .container[data-theme='dark'] .settings-btn:hover,
+.container[data-theme='dark'] .help-btn:hover,
 .container[data-theme='dark'] .memo-item:hover,
 .container[data-theme='dark'] .memo-item.active {
   background: #333;
@@ -840,6 +877,20 @@ body:has(.container[data-theme='dark']) {
 .main-content.secret .settings-section h2,
 .main-content.secret .settings-kind-title {
   color: #9aa0a6;
+}
+
+.container[data-theme='dark'] .shortcut-row,
+.main-content.secret .shortcut-row {
+  border-bottom-color: #4a4d52;
+}
+
+.container[data-theme='dark'] .shortcut-keys,
+.container[data-theme='dark'] .shortcut-description,
+.container[data-theme='dark'] .help-version,
+.main-content.secret .shortcut-keys,
+.main-content.secret .shortcut-description,
+.main-content.secret .help-version {
+  color: #e0e0e0;
 }
 
 .container[data-theme='dark'] .settings-close-btn,

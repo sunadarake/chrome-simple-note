@@ -7,6 +7,7 @@ initMemoApp({
   sessionStorage,
   confirm: (message) => confirm(message),
   copy: () => document.execCommand('copy'),
+  version: chrome.runtime.getManifest().version,
   download: (filename, text) => {
     const url = URL.createObjectURL(
       new Blob([text], { type: 'application/json' }),

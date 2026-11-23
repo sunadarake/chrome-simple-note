@@ -1,0 +1,45 @@
+# ショートカット一覧とバージョンを表示するヘルプ画面を追加する
+
+## 概要
+キーボードショートカットを確認できるヘルプ画面を追加し、あわせて今の拡張機能のバージョンを表示する。サイドバーのヘッダーに「?」ボタンを置き、押すとメイン画面にヘルプを表示する。内容はショートカットの一覧とバージョンだけに絞る。
+
+## 調査結果
+- `src/memo.html` のサイドバーヘッダーは 11〜36 行。左から設定ボタン（`.settings-btn`）、タイトル、閉じるボタン（`.sidebar-close`）の順。
+- 設定パネルは 54〜137 行。`.settings-panel` を開いている間は、`src/memo.js` の `setSettingsOpen`（304〜310行）が `.main-header` と `.editor` を隠す。
+- メイン画面のタイトル行は 138〜160 行、エディタは 161〜167 行。
+- 設定パネルの見た目は `src/memo.css` 235〜330 行。ダークテーマとシークレットメモ用の設定パネルの配色は 805〜867 行にまとまっている。`.settings-header` / `.settings-title` / `.settings-close-btn` / `.settings-section` を再利用すると、配色の追加が少なくて済む。
+- `[hidden]` の表示制御は `src/memo.css` 235〜240 行で `.main-header` / `.editor` / `.settings-panel` に対して行われている。ヘルプ用のパネルにも同じ指定が必要。
+- `src/main.js` は `initMemoApp` に `root` / `storage` / `sessionStorage` / `confirm` / `copy` / `download` を渡している（4〜20行）。バージョンはまだ渡していない。
+- `manifest.json` の `version` は 4 行目で `13.7.0`。`package.json` の `version` は `13.7.1` で、今は一致していない。AGENTS.md では `manifest.json` の `version` がリリースの基準。
+- ショートカットの一覧は、TODO 029 で `src/shortcuts.js` に `SHORTCUTS` として定義する予定。
+- 既存の `src/memo.test.js` は `initMemoApp` に依存を直接渡す形なので、バージョンも同じようにテストから注入できる。
+
+## 実装計画
+- [x] ステップ1: `src/memo.html` のサイドバーヘッダーに「?」ボタン（`.help-btn`）を追加する。設定パネルの後ろに `.help-panel`（hidden）を追加し、ヘッダー・閉じるボタン・ショートカット一覧・バージョン表示を置く。見た目は設定パネルと同じクラス（`.settings-header` など）を再利用する（`src/memo.html`）。
+- [x] ステップ2: `src/memo.js` でヘルプの開閉を実装する。設定パネルとヘルプは同時に開かず、片方を開くともう片方を閉じる。開いている間は `.main-header` と `.editor` を隠し、閉じると元に戻す。`setSettingsOpen` もヘルプを閉じるようにそろえる（`src/memo.js`）。
+- [x] ステップ3: ヘルプのショートカット一覧は `src/shortcuts.js` の `SHORTCUTS` から描画し、キーと説明の対応が実装とずれないようにする。バージョンは `initMemoApp` の新しい依存（例: `version`）として受け取り、`.help-version` に `v<version>` の形で表示する（`src/memo.js`）。
+- [x] ステップ4: `src/main.js` から `version: chrome.runtime.getManifest().version` を渡す（`src/main.js`）。
+- [x] ステップ5: `src/memo.css` にヘルプパネルのレイアウトとキー表示のスタイルを追加する。`.help-panel[hidden]` の非表示、スクロール、設定パネルと同じダークテーマ・シークレットメモの配色を含める（`src/memo.css`）。
+- [x] ステップ6: `src/memo.test.js` に、初期状態ではヘルプが隠れていること、「?」で開いてタイトル行とエディタが隠れること、バージョンと4つのショートカットが表示されること、閉じると戻ること、設定パネルと排他になることを追加する（`src/memo.test.js`）。
+- [x] ステップ7: `AGENTS.md` と `README.md` にヘルプ画面の場所・内容・バージョン表示を追記する（`AGENTS.md`、`README.md`）。
+
+## テスト・確認方法
+- [x] `npm test` / `npm run lint` / `npm run typecheck` / `npx prettier --check .` が通る
+- [x] 初期表示ではヘルプが隠れている
+- [x] サイドバーの「?」でヘルプが開き、タイトル行とエディタが隠れる
+- [x] ヘルプに Ctrl+C / Ctrl+S / Ctrl+U / Delete の4つと説明が表示される
+- [x] ヘルプに `manifest.json` の `version` が表示される
+- [x] ヘルプの「閉じる」で元のメモ画面に戻る
+- [x] 設定パネルを開いてから「?」を押すと設定が閉じ、ヘルプを開いてから設定ボタンを押すとヘルプが閉じる
+- [ ] ダークテーマとシークレットメモでヘルプの文字・背景が見やすいことを目視確認する
+
+## 決定事項
+- ヘルプはサイドバーヘッダーの「?」ボタンから開く。
+- ヘルプに載せる内容はショートカット一覧とバージョンだけにする。
+- ヘルプを開くキーボードショートカットは割り当てない。
+- バージョンは `chrome.runtime.getManifest().version` を使い、`initMemoApp` には依存として渡す（テスト可能にするため）。
+
+## 懸念点・未決事項
+- `manifest.json` は `13.7.0`、`package.json` は `13.7.1` で現在ずれている。ヘルプには `manifest.json` の値を出すため、リリース前に両者をそろえる必要がある。
+- ショートカット一覧を `SHORTCUTS` から描画するため、TODO 029（ショートカット）を先に完了させる。029 の実装でキー割り当てが変わったら、ヘルプの表示も自動で追随する。
+- ヘルプを開いている間は TODO 029 のショートカットを無効にする（エディタ非表示の判定に合わせる）。ヘルプ画面から直接メモ操作はできない。

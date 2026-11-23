@@ -51,6 +51,7 @@ const start = ({
   confirm = () => true,
   copy = () => {},
   download = () => {},
+  version = '1.2.3',
 } = {}) => {
   const storage = fakeStorage(memos);
   if (settings) storage.data.settings = JSON.stringify(settings);
@@ -62,6 +63,7 @@ const start = ({
     confirm,
     copy,
     download,
+    version,
   });
   return { ...storage, session };
 };
@@ -294,6 +296,62 @@ describe('キーボードショートカット', () => {
   it('設定パネルを開いている間はショートカットが効かない', () => {
     const storage = start({ memos: [memo(1, 'a')] });
     q('.settings-btn').click();
+    q('.content-input').value = 'changed';
+    expect(pressKey('s', { ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(pressKey('Delete').defaultPrevented).toBe(false);
+    expect(stored(storage)[0].content).toBe('a');
+  });
+});
+
+describe('ヘルプ', () => {
+  it('初期状態では隠れている', () => {
+    start();
+    expect(q('.help-panel').hidden).toBe(true);
+  });
+
+  it('サイドバーの「?」で開き、タイトル行とエディタを隠す', () => {
+    start();
+    q('.help-btn').click();
+    expect(q('.help-panel').hidden).toBe(false);
+    expect(q('.main-header').hidden).toBe(true);
+    expect(q('.editor').hidden).toBe(true);
+  });
+
+  it('4つのショートカットとバージョンを表示する', () => {
+    start();
+    q('.help-btn').click();
+    expect(
+      [...document.querySelectorAll('.shortcut-keys')].map(
+        (element) => element.textContent,
+      ),
+    ).toEqual(['Ctrl+C', 'Ctrl+S', 'Ctrl+U', 'Delete']);
+    expect(q('.help-version').textContent).toBe('v1.2.3');
+  });
+
+  it('「閉じる」で元のメモ画面に戻る', () => {
+    start();
+    q('.help-btn').click();
+    q('.help-close-btn').click();
+    expect(q('.help-panel').hidden).toBe(true);
+    expect(q('.editor').hidden).toBe(false);
+  });
+
+  it('設定パネルと排他になる', () => {
+    start();
+    q('.settings-btn').click();
+    q('.help-btn').click();
+    expect(q('.help-panel').hidden).toBe(false);
+    expect(q('.settings-panel').hidden).toBe(true);
+    expect(q('.settings-btn').getAttribute('aria-expanded')).toBe('false');
+    q('.settings-btn').click();
+    expect(q('.settings-panel').hidden).toBe(false);
+    expect(q('.help-panel').hidden).toBe(true);
+    expect(q('.help-btn').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('開いている間はショートカットが効かない', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    q('.help-btn').click();
     q('.content-input').value = 'changed';
     expect(pressKey('s', { ctrlKey: true }).defaultPrevented).toBe(false);
     expect(pressKey('Delete').defaultPrevented).toBe(false);

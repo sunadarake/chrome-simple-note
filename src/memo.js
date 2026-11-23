@@ -10,7 +10,7 @@ import {
   updateContent,
 } from './memo-store.js';
 import { loadSettings, saveSettings } from './settings.js';
-import { initShortcuts } from './shortcuts.js';
+import { SHORTCUTS, initShortcuts } from './shortcuts.js';
 import { loadMemos, saveMemos } from './storage.js';
 
 const LOG_DISPLAY_MS = 3000;
@@ -24,6 +24,7 @@ const UNDO_LIMIT = 100;
  * @param {(message: string) => boolean} deps.confirm
  * @param {() => void} deps.copy 選択中のテキストをクリップボードにコピーする
  * @param {(filename: string, text: string) => void} deps.download テキストをファイルとして保存する
+ * @param {string} deps.version ヘルプに表示する拡張機能のバージョン
  */
 export function initMemoApp({
   root,
@@ -32,6 +33,7 @@ export function initMemoApp({
   confirm,
   copy,
   download,
+  version,
 }) {
   /** @param {string} selector */
   const query = (selector) => {
@@ -61,6 +63,11 @@ export function initMemoApp({
   const settingsBtn = query('.settings-btn');
   const settingsPanel = /** @type {HTMLElement} */ (query('.settings-panel'));
   const settingsCloseBtn = query('.settings-close-btn');
+  const helpBtn = query('.help-btn');
+  const helpPanel = /** @type {HTMLElement} */ (query('.help-panel'));
+  const helpCloseBtn = query('.help-close-btn');
+  const shortcutList = query('.shortcut-list');
+  const helpVersion = /** @type {HTMLElement} */ (query('.help-version'));
   const exportBtn = query('.export-btn');
   const importBtn = query('.import-btn');
   const deleteAllBtn = query('.delete-all-btn');
@@ -363,15 +370,53 @@ export function initMemoApp({
     showLogMessage(`${count}件をエクスポートしました`);
   }
 
+  // 設定・ヘルプを開いている間は、メモのタイトル行とエディタを隠す
+  function syncMainVisibility() {
+    const panelOpen = !settingsPanel.hidden || !helpPanel.hidden;
+    mainHeader.hidden = panelOpen;
+    editor.hidden = panelOpen;
+  }
+
   /**
-   * 設定を開いている間は、メモのタイトル行とエディタを隠す
+   * 設定とヘルプは同時に開かない
    * @param {boolean} open
    */
   function setSettingsOpen(open) {
     settingsPanel.hidden = !open;
-    mainHeader.hidden = open;
-    editor.hidden = open;
     settingsBtn.setAttribute('aria-expanded', String(open));
+    if (open) {
+      helpPanel.hidden = true;
+      helpBtn.setAttribute('aria-expanded', 'false');
+    }
+    syncMainVisibility();
+  }
+
+  /** @param {boolean} open */
+  function setHelpOpen(open) {
+    helpPanel.hidden = !open;
+    helpBtn.setAttribute('aria-expanded', String(open));
+    if (open) {
+      settingsPanel.hidden = true;
+      settingsBtn.setAttribute('aria-expanded', 'false');
+    }
+    syncMainVisibility();
+  }
+
+  function renderHelp() {
+    shortcutList.innerHTML = '';
+    for (const { keys, description } of SHORTCUTS) {
+      const row = document.createElement('div');
+      row.className = 'shortcut-row';
+      const key = document.createElement('span');
+      key.className = 'shortcut-keys';
+      key.textContent = keys;
+      const text = document.createElement('span');
+      text.className = 'shortcut-description';
+      text.textContent = description;
+      row.append(key, text);
+      shortcutList.appendChild(row);
+    }
+    helpVersion.textContent = `v${version}`;
   }
 
   function applySettings() {
@@ -494,6 +539,10 @@ export function initMemoApp({
     setSettingsOpen(settingsPanel.hidden === true),
   );
   settingsCloseBtn.addEventListener('click', () => setSettingsOpen(false));
+  helpBtn.addEventListener('click', () =>
+    setHelpOpen(helpPanel.hidden === true),
+  );
+  helpCloseBtn.addEventListener('click', () => setHelpOpen(false));
   for (const input of [
     normalAutoSaveInput,
     normalAutoSaveDelayInput,
@@ -543,6 +592,7 @@ export function initMemoApp({
     remove: deleteMemo,
   });
 
+  renderHelp();
   showSettings();
   retitleAll();
   if (memos.length > 0) {
