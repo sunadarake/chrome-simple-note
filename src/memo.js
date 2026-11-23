@@ -10,9 +10,11 @@ import {
   updateContent,
 } from './memo-store.js';
 import { loadSettings, saveSettings } from './settings.js';
+import { initShortcuts } from './shortcuts.js';
 import { loadMemos, saveMemos } from './storage.js';
 
 const LOG_DISPLAY_MS = 3000;
+const UNDO_LIMIT = 100;
 
 /**
  * @param {object} deps
@@ -98,6 +100,9 @@ export function initMemoApp({
   let customTitle = '';
   let lastCustomTitle = '';
   let editingTitle = false;
+  /** @type {string[]} */
+  let undoHistory = [];
+  let undoValue = '';
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   let autoSaveTimer;
   /** @type {ReturnType<typeof setTimeout> | undefined} */
@@ -135,6 +140,8 @@ export function initMemoApp({
     customTitle = memo.customTitle ?? '';
     lastContent = memo.content;
     lastCustomTitle = customTitle;
+    undoHistory = [];
+    undoValue = memo.content;
     editingTitle = false;
     titleInput.hidden = true;
     titleDisplay.hidden = false;
@@ -233,6 +240,12 @@ export function initMemoApp({
     showLogMessage('メモを保存しました', 'save');
   }
 
+  function saveMemoWithTitle() {
+    // 保存ボタンと同じ結果になるよう、編集中のタイトルを先に確定する
+    if (editingTitle) endTitleEdit(true);
+    saveMemo();
+  }
+
   function deleteMemo() {
     const memo = memos.find((m) => m.id === currentId);
     if (!memo) return;
@@ -273,9 +286,41 @@ export function initMemoApp({
   }
 
   function handleContentInput() {
+    // 入力のたびに直前の本文を積む。ブラウザ標準の Ctrl+Z も input として積まれる
+    if (contentInput.value !== undoValue) {
+      undoHistory.push(undoValue);
+      if (undoHistory.length > UNDO_LIMIT) undoHistory.shift();
+      undoValue = contentInput.value;
+    }
     updateHighlight();
     updateTitleDisplay();
     scheduleAutoSave();
+  }
+
+  function undoContent() {
+    const previous = undoHistory.pop();
+    if (previous === undefined) {
+      showLogMessage('これ以上元に戻せません');
+      return;
+    }
+    undoValue = previous;
+    contentInput.value = previous;
+    updateHighlight();
+    updateTitleDisplay();
+    scheduleAutoSave();
+  }
+
+  function hasSelection() {
+    const active = document.activeElement;
+    if (
+      (active instanceof HTMLTextAreaElement ||
+        active instanceof HTMLInputElement) &&
+      active.selectionStart !== active.selectionEnd
+    ) {
+      return true;
+    }
+    const selection = document.getSelection();
+    return Boolean(selection && !selection.isCollapsed);
   }
 
   function currentKind() {
@@ -485,6 +530,17 @@ export function initMemoApp({
     event.preventDefault();
     settingsPanel.classList.remove('drop-active');
     if (inPanel(event)) importFiles([...(dragEvent.dataTransfer?.files ?? [])]);
+  });
+
+  initShortcuts({
+    // 画面を開き直すテストでも古いリスナーが残らないよう、文書ではなくこの画面に登録する
+    root: container,
+    isActive: () => !editor.hidden,
+    hasSelection,
+    copy: copyContent,
+    save: saveMemoWithTitle,
+    undo: undoContent,
+    remove: deleteMemo,
   });
 
   showSettings();

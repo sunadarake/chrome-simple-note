@@ -23,6 +23,16 @@ const typeContent = (value) => {
   q('.content-input').value = value;
   q('.content-input').dispatchEvent(new Event('input'));
 };
+const pressKey = (key, init = {}) => {
+  const event = new KeyboardEvent('keydown', {
+    key,
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  });
+  q('.container').dispatchEvent(event);
+  return event;
+};
 const memo = (id, content) => ({
   id,
   title: content.substring(0, 30),
@@ -228,6 +238,66 @@ describe('コピー', () => {
     q('.copy-btn').click();
     expect(copy).toHaveBeenCalledOnce();
     expect(q('.log-message').textContent).toBe('コンテンツをコピーしました');
+  });
+});
+
+describe('キーボードショートカット', () => {
+  it('Ctrl+S で保存し、ページ保存を止める', () => {
+    const storage = start({ memos: [memo(1, 'old')] });
+    q('.content-input').value = 'new content';
+    const event = pressKey('s', { ctrlKey: true });
+    expect(event.defaultPrevented).toBe(true);
+    expect(stored(storage)[0].content).toBe('new content');
+  });
+
+  it('タイトル編集中の Ctrl+S はタイトルを確定して保存する', () => {
+    const storage = start({ memos: [memo(1, 'old')] });
+    q('.title-display').click();
+    q('.title-input').value = '手動';
+    pressKey('s', { ctrlKey: true });
+    expect(stored(storage)[0]).toMatchObject({
+      customTitle: '手動',
+      title: '手動',
+    });
+  });
+
+  it('Ctrl+U で本文を複数回前の状態に戻す', () => {
+    start({ memos: [memo(1, 'a')] });
+    typeContent('ab');
+    typeContent('abc');
+    pressKey('u', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('ab');
+    pressKey('u', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('a');
+    pressKey('u', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('a');
+    expect(q('.log-message').textContent).toBe('これ以上元に戻せません');
+  });
+
+  it('メモを切り替えるとアンドゥ履歴を空にする', () => {
+    start({ memos: [memo(2, 'b'), memo(1, 'a')] });
+    typeContent('b2');
+    items()[1].click();
+    pressKey('u', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('a');
+  });
+
+  it('本文の入力中でも Delete でメモを削除する', () => {
+    const confirm = vi.fn(() => true);
+    const storage = start({ memos: [memo(1, 'a')], confirm });
+    q('.content-input').focus();
+    pressKey('Delete');
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(stored(storage)).toEqual([]);
+  });
+
+  it('設定パネルを開いている間はショートカットが効かない', () => {
+    const storage = start({ memos: [memo(1, 'a')] });
+    q('.settings-btn').click();
+    q('.content-input').value = 'changed';
+    expect(pressKey('s', { ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(pressKey('Delete').defaultPrevented).toBe(false);
+    expect(stored(storage)[0].content).toBe('a');
   });
 });
 
