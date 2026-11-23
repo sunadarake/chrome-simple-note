@@ -605,6 +605,31 @@ body {
   color: #81c995;
 }
 
+/* 暗い背景でも見えるよう、シークレットメモでは操作ボタンを明るい色にする */
+.main-content.secret .delete-btn {
+  color: #f28b82;
+}
+
+.main-content.secret .delete-btn:hover {
+  background: rgba(242, 139, 130, 0.15);
+}
+
+.main-content.secret .save-btn {
+  color: #81c995;
+}
+
+.main-content.secret .save-btn:hover {
+  background: rgba(129, 201, 149, 0.15);
+}
+
+.main-content.secret .copy-btn {
+  color: #8ab4f8;
+}
+
+.main-content.secret .copy-btn:hover {
+  background: rgba(138, 180, 248, 0.15);
+}
+
 /* 画面の大きさを変えないよう、メイン画面の上余白（30px）に横一列で重ねて表示する */
 .log-message {
   position: absolute;
