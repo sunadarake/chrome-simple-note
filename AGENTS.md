@@ -49,6 +49,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - 設定パネルの変更は画面にすぐ反映するが、設定を保存ボタンを押すまで `localStorage` には書かない。デフォルトに戻すは confirm で確認してから全項目を既定値に戻し、そのまま保存する。設定は `localStorage` の `settings` キーに JSON で保存する。自動保存（`autoSave`）・間隔（`autoSaveDelayMs`）・削除確認（`confirmDelete`）は `{ normal, secret }` の形でメモ種別ごとに持つ。範囲は、自動保存の間隔 500〜5000ms（既定 1000）、文字サイズ 12〜24px（既定 16）。自動保存は通常・シークレットとも既定オフ、削除確認は両方とも既定オン。旧形式の `autoSave: boolean` / `autoSaveDelayMs: number` は通常メモの設定として引き継ぎ、シークレットメモは既定にする。文字サイズは CSS 変数 `--editor-font-size` で `.content-input` と `.editor-highlight` に同じ値を入れる。テーマは `.container` の `data-theme`。ダークテーマの通常メモとシークレットメモは配色が近いので、シークレットは `.secret-label` と一覧の 🔒 でも区別する
 - 全メモ削除は通常メモだけを消し、シークレットメモは残す。通常メモの削除確認設定に関係なく、常に確認する。書き始める前の空メモは件数に数えない
 - サイドバーの「?」ボタン（`.help-btn`）でヘルプパネル（`.help-panel`）を開く。ショートカット一覧は `src/shortcuts.js` の `SHORTCUTS` から描画し、バージョンは `main.js` が渡す `chrome.runtime.getManifest().version` を `v<version>` で表示する。設定パネルとは同時に開かず、開いている間はタイトル行とエディタを隠す（`.help-close-btn` で閉じる）
+- 設定・ヘルプを開いている間に、新しいメモ／シークレットメモの作成や一覧からのメモ選択をすると、未保存の設定変更は捨ててパネルを閉じ、メモ画面に戻る
 - インポートは、設定パネルを開いている間、パネルへのファイルのドラッグ＆ドロップでもできる（複数可。`.drop-active` で範囲を示す）。不正なファイルは飛ばして残りを取り込み、失敗したファイルをログに出す。パネルの外にドロップしても、Chrome がタブをファイル表示に切り替えないよう `dragover` / `drop` を止めている
 - エクスポートは `{version: 1, exportedAt, memos}` の JSON（`customTitle` を含む）で、シークレットメモは含めない。インポートは今あるメモに追加し、同じ `id` はスキップする。取り込んだメモは常に通常メモ。一覧の並びは `id` の降順で決まるため、`id` を保てば並びも維持される
 - サイドバーは「SimpleNote」の横の `.sidebar-close` で閉じ、閉じている間だけ出るメイン画面左上の `.sidebar-open`（「»」）で開く（どちらも `.sidebar-toggle`）。閉じた状態は `localStorage` の `sidebarCollapsed` に保存する（閉じても幅の保存値は変わらない）

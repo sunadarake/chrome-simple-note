@@ -132,7 +132,10 @@ export function initMemoApp({
         (memo.secret ? '🔒 ' : '') + (memo.title || '無題のメモ');
       // 一覧では先頭20文字しか見えないので、ツールチップで1行目を全部見せる
       memoItem.title = memo.content.split('\n')[0];
-      memoItem.addEventListener('click', () => loadMemo(memo.id));
+      memoItem.addEventListener('click', () => {
+        closePanels();
+        loadMemo(memo.id);
+      });
       memoList.appendChild(memoItem);
     }
   }
@@ -405,6 +408,12 @@ export function initMemoApp({
     syncMainVisibility();
   }
 
+  // メモを開くときは、未保存の設定変更を捨ててパネルを閉じる
+  function closePanels() {
+    setSettingsOpen(false);
+    setHelpOpen(false);
+  }
+
   function renderHelp() {
     shortcutList.innerHTML = '';
     for (const { keys, description } of SHORTCUTS) {
@@ -544,8 +553,14 @@ export function initMemoApp({
   const inPanel = (event) =>
     settingsPanel.contains(/** @type {Node | null} */ (event.target));
 
-  newMemoBtn.addEventListener('click', () => createNewMemo(false));
-  secretMemoBtn.addEventListener('click', () => createNewMemo(true));
+  newMemoBtn.addEventListener('click', () => {
+    closePanels();
+    createNewMemo(false);
+  });
+  secretMemoBtn.addEventListener('click', () => {
+    closePanels();
+    createNewMemo(true);
+  });
   searchInput.addEventListener('input', renderMemoList);
   contentInput.addEventListener('input', handleContentInput);
   titleDisplay.addEventListener('click', startTitleEdit);

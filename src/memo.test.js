@@ -382,6 +382,14 @@ describe('ヘルプ', () => {
     expect(q('.help-btn').getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('一覧のメモを開くと閉じる', () => {
+    start({ memos: [memo(2, 'first'), memo(1, 'second')] });
+    q('.help-btn').click();
+    items()[1].click();
+    expect(q('.help-panel').hidden).toBe(true);
+    expect(q('.content-input').value).toBe('second');
+  });
+
   it('開いている間はショートカットが効かない', () => {
     const storage = start({ memos: [memo(1, 'a')] });
     q('.help-btn').click();
@@ -582,6 +590,39 @@ describe('設定パネル', () => {
     q('.settings-close-btn').click();
     expect(panelHidden()).toBe(true);
     expect(q('.editor').hidden).toBe(false);
+  });
+
+  it('「新しいメモ」で閉じてメモ画面に戻る', () => {
+    start();
+    q('.settings-btn').click();
+    q('.new-memo-btn').click();
+    expect(panelHidden()).toBe(true);
+    expect(q('.main-header').hidden).toBe(false);
+    expect(q('.editor').hidden).toBe(false);
+  });
+
+  it('「シークレットメモ」で閉じる', () => {
+    start();
+    q('.settings-btn').click();
+    q('.secret-memo-btn').click();
+    expect(panelHidden()).toBe(true);
+  });
+
+  it('一覧のメモを開くと閉じて、そのメモを選択する', () => {
+    start({ memos: [memo(2, 'first'), memo(1, 'second')] });
+    q('.settings-btn').click();
+    items()[1].click();
+    expect(panelHidden()).toBe(true);
+    expect(q('.content-input').value).toBe('second');
+    expect(items()[1].classList.contains('active')).toBe(true);
+  });
+
+  it('保存せずに新しいメモを作ると設定の変更は保存されない', () => {
+    const storage = start({ settings: null });
+    q('.settings-btn').click();
+    change('.font-size-input', '20');
+    q('.new-memo-btn').click();
+    expect(storage.data.settings).toBeUndefined();
   });
 
   it('保存値がなければ既定値を表示する', () => {
