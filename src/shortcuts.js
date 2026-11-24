@@ -3,6 +3,8 @@ export const SHORTCUTS = [
   { keys: 'Ctrl+C', description: '本文をコピー（選択がなければ全体）' },
   { keys: 'Ctrl+S', description: '保存' },
   { keys: 'Ctrl+U', description: 'アンドゥ（本文を1つ前に戻す）' },
+  { keys: 'Ctrl+O', description: '新しいメモを作成' },
+  { keys: 'Ctrl+Shift+O', description: 'シークレットメモを作成' },
   { keys: 'Delete', description: 'このメモを削除' },
 ];
 
@@ -15,6 +17,8 @@ export const SHORTCUTS = [
  * @param {() => void} deps.save
  * @param {() => void} deps.undo
  * @param {() => void} deps.remove
+ * @param {() => void} deps.newMemo
+ * @param {() => void} deps.newSecretMemo
  */
 export function initShortcuts({
   root,
@@ -24,6 +28,8 @@ export function initShortcuts({
   save,
   undo,
   remove,
+  newMemo,
+  newSecretMemo,
 }) {
   root.addEventListener('keydown', (event) => {
     const key = /** @type {KeyboardEvent} */ (event);
@@ -45,6 +51,15 @@ export function initShortcuts({
     if (withCtrl && key.key.toLowerCase() === 'u') {
       key.preventDefault();
       undo();
+      return;
+    }
+    if (withCtrl && key.key.toLowerCase() === 'o') {
+      key.preventDefault();
+      if (key.shiftKey) {
+        newSecretMemo();
+      } else {
+        newMemo();
+      }
       return;
     }
     if (key.key === 'Delete') {

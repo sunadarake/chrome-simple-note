@@ -11,6 +11,8 @@ const setup = (overrides = {}) => {
     save: vi.fn(),
     undo: vi.fn(),
     remove: vi.fn(),
+    newMemo: vi.fn(),
+    newSecretMemo: vi.fn(),
     ...overrides,
   };
   initShortcuts({ root, ...deps });
@@ -33,11 +35,13 @@ beforeEach(() => {
 });
 
 describe('shortcuts', () => {
-  it('ヘルプ向けの一覧に4つのキーを持つ', () => {
+  it('ヘルプ向けの一覧に6つのキーを持つ', () => {
     expect(SHORTCUTS.map((s) => s.keys)).toEqual([
       'Ctrl+C',
       'Ctrl+S',
       'Ctrl+U',
+      'Ctrl+O',
+      'Ctrl+Shift+O',
       'Delete',
     ]);
   });
@@ -77,14 +81,32 @@ describe('shortcuts', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
+  it('Ctrl+O で新しいメモを作成し、ファイルを開く動作を止める', () => {
+    const { root, newMemo, newSecretMemo } = setup();
+    const event = press(root, 'o', { ctrlKey: true });
+    expect(newMemo).toHaveBeenCalledOnce();
+    expect(newSecretMemo).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('Ctrl+Shift+O でシークレットメモを作成する', () => {
+    const { root, newMemo, newSecretMemo } = setup();
+    const event = press(root, 'O', { ctrlKey: true, shiftKey: true });
+    expect(newSecretMemo).toHaveBeenCalledOnce();
+    expect(newMemo).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it('エディタが表示されていないときは何もしない', () => {
-    const { root, copy, save, undo, remove } = setup({
+    const { root, copy, save, undo, remove, newMemo, newSecretMemo } = setup({
       isActive: () => false,
     });
     for (const [key, init] of [
       ['c', { ctrlKey: true }],
       ['s', { ctrlKey: true }],
       ['u', { ctrlKey: true }],
+      ['o', { ctrlKey: true }],
+      ['O', { ctrlKey: true, shiftKey: true }],
       ['Delete', {}],
     ]) {
       expect(press(root, key, init).defaultPrevented).toBe(false);
@@ -93,6 +115,8 @@ describe('shortcuts', () => {
     expect(save).not.toHaveBeenCalled();
     expect(undo).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
+    expect(newMemo).not.toHaveBeenCalled();
+    expect(newSecretMemo).not.toHaveBeenCalled();
   });
 
   it('キーリピートと IME 変換中は無視する', () => {

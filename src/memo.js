@@ -616,6 +616,8 @@ export function initMemoApp({
     save: saveMemoWithTitle,
     undo: undoContent,
     remove: deleteMemo,
+    newMemo: () => createNewMemo(false),
+    newSecretMemo: () => createNewMemo(true),
   });
 
   renderHelp();

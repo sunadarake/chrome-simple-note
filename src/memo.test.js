@@ -245,6 +245,25 @@ describe('コピー', () => {
 });
 
 describe('キーボードショートカット', () => {
+  it('Ctrl+O で新しいメモを作成し、ファイルを開く動作を止める', () => {
+    start({ memos: [memo(1, 'a')] });
+    const event = pressKey('o', { ctrlKey: true });
+    expect(event.defaultPrevented).toBe(true);
+    expect(items()).toHaveLength(2);
+    expect(items()[0].textContent).toBe('無題のメモ');
+    expect(q('.content-input').value).toBe('');
+    expect(q('.main-content').classList.contains('secret')).toBe(false);
+  });
+
+  it('Ctrl+Shift+O でシークレットメモを作成する', () => {
+    start();
+    const event = pressKey('O', { ctrlKey: true, shiftKey: true });
+    expect(event.defaultPrevented).toBe(true);
+    expect(items()).toHaveLength(2);
+    expect(items()[0].classList.contains('secret')).toBe(true);
+    expect(q('.main-content').classList.contains('secret')).toBe(true);
+  });
+
   it('Ctrl+S で保存し、ページ保存を止める', () => {
     const storage = start({ memos: [memo(1, 'old')] });
     q('.content-input').value = 'new content';
@@ -318,14 +337,21 @@ describe('ヘルプ', () => {
     expect(q('.editor').hidden).toBe(true);
   });
 
-  it('4つのショートカットとバージョンを表示する', () => {
+  it('6つのショートカットとバージョンを表示する', () => {
     start();
     q('.help-btn').click();
     expect(
       [...document.querySelectorAll('.shortcut-keys')].map(
         (element) => element.textContent,
       ),
-    ).toEqual(['Ctrl+C', 'Ctrl+S', 'Ctrl+U', 'Delete']);
+    ).toEqual([
+      'Ctrl+C',
+      'Ctrl+S',
+      'Ctrl+U',
+      'Ctrl+O',
+      'Ctrl+Shift+O',
+      'Delete',
+    ]);
     expect(q('.help-version').textContent).toBe('v1.2.3');
   });
 
