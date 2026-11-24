@@ -98,7 +98,6 @@ export function initMemoApp({
   const titleLengthInput = /** @type {HTMLSelectElement} */ (
     query('.title-length-input')
   );
-  const themeInput = /** @type {HTMLSelectElement} */ (query('.theme-input'));
 
   let memos = loadMemos(storage, sessionStorage);
   const settings = loadSettings(storage);
@@ -433,7 +432,6 @@ export function initMemoApp({
   }
 
   function applySettings() {
-    container.dataset.theme = settings.theme;
     container.style.setProperty('--editor-font-size', `${settings.fontSize}px`);
     normalAutoSaveDelayInput.disabled = !settings.autoSave.normal;
     secretAutoSaveDelayInput.disabled = !settings.autoSave.secret;
@@ -450,7 +448,6 @@ export function initMemoApp({
     secretConfirmDeleteInput.checked = settings.confirmDelete.secret;
     fontSizeInput.value = String(settings.fontSize);
     titleLengthInput.value = String(settings.titleLength);
-    themeInput.value = settings.theme;
     applySettings();
   }
 
@@ -472,7 +469,6 @@ export function initMemoApp({
     settings.confirmDelete.secret = secretConfirmDeleteInput.checked;
     settings.fontSize = Number(fontSizeInput.value);
     settings.titleLength = Number(titleLengthInput.value);
-    settings.theme = themeInput.value === 'dark' ? 'dark' : 'light';
     if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
     applySettings();
     retitleAll();
@@ -492,7 +488,6 @@ export function initMemoApp({
     settings.confirmDelete = { ...DEFAULT_SETTINGS.confirmDelete };
     settings.fontSize = DEFAULT_SETTINGS.fontSize;
     settings.titleLength = DEFAULT_SETTINGS.titleLength;
-    settings.theme = DEFAULT_SETTINGS.theme;
     if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
     showSettings();
     retitleAll();
@@ -593,7 +588,6 @@ export function initMemoApp({
     secretConfirmDeleteInput,
     fontSizeInput,
     titleLengthInput,
-    themeInput,
   ]) {
     input.addEventListener('change', changeSettings);
   }

@@ -13,7 +13,6 @@ export const TITLE_LENGTH_RANGE = { min: 10, max: 100 };
  * @property {PerKindBoolean} confirmDelete
  * @property {number} fontSize
  * @property {number} titleLength タイトルにする本文の先頭の文字数
- * @property {'light' | 'dark'} theme
  */
 
 /** @type {Settings} */
@@ -23,7 +22,6 @@ export const DEFAULT_SETTINGS = {
   confirmDelete: { normal: true, secret: true },
   fontSize: 16,
   titleLength: 50,
-  theme: 'light',
 };
 
 /**
@@ -114,7 +112,6 @@ export function loadSettings(storage) {
       TITLE_LENGTH_RANGE,
       DEFAULT_SETTINGS.titleLength,
     ),
-    theme: saved.theme === 'dark' ? 'dark' : 'light',
   };
 }
 

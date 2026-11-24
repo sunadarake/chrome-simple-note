@@ -571,14 +571,11 @@ body {
 }
 
 .main-content.secret .title-display,
-.container[data-theme='dark'] .main-content:not(.secret) .title-display,
-.main-content.secret .title-input,
-.container[data-theme='dark'] .main-content:not(.secret) .title-input {
+.main-content.secret .title-input {
   color: #ecf0f1;
 }
 
-.main-content.secret .title-input,
-.container[data-theme='dark'] .main-content:not(.secret) .title-input {
+.main-content.secret .title-input {
   border-bottom-color: #888;
 }
 
@@ -586,15 +583,13 @@ body {
   border-bottom-color: #4a4d52;
 }
 
-.main-content.secret .sidebar-open,
-.container[data-theme='dark'] .main-content:not(.secret) .sidebar-open {
+.main-content.secret .sidebar-open {
   background: #1e1f22;
   border-color: #4a4d52;
   color: #ecf0f1;
 }
 
-.main-content.secret .sidebar-open:hover,
-.container[data-theme='dark'] .main-content:not(.secret) .sidebar-open:hover {
+.main-content.secret .sidebar-open:hover {
   background: #2f3136;
 }
 
@@ -607,83 +602,65 @@ body {
   border-color: #95a5a6;
 }
 
-.main-content.secret .editor-highlight,
-.container[data-theme='dark'] .main-content:not(.secret) .editor-highlight {
+.main-content.secret .editor-highlight {
   color: #e8eaed;
 }
 
-.main-content.secret .content-input,
-.container[data-theme='dark'] .main-content:not(.secret) .content-input {
+.main-content.secret .content-input {
   caret-color: #e8eaed;
 }
 
-.main-content.secret .content-input::placeholder,
-.container[data-theme='dark']
-  .main-content:not(.secret)
-  .content-input::placeholder {
+.main-content.secret .content-input::placeholder {
   color: #888;
 }
 
 .main-content.secret .md-heading,
-.container[data-theme='dark'] .main-content:not(.secret) .md-heading,
-.main-content.secret .md-link,
-.container[data-theme='dark'] .main-content:not(.secret) .md-link {
+.main-content.secret .md-link {
   color: #8ab4f8;
 }
 
-.main-content.secret .md-quote,
-.container[data-theme='dark'] .main-content:not(.secret) .md-quote {
+.main-content.secret .md-quote {
   color: #9aa0a6;
 }
 
-.main-content.secret .md-list,
-.container[data-theme='dark'] .main-content:not(.secret) .md-list {
+.main-content.secret .md-list {
   color: #fdd663;
 }
 
-.main-content.secret .md-hr,
-.container[data-theme='dark'] .main-content:not(.secret) .md-hr {
+.main-content.secret .md-hr {
   color: #7f8c8d;
 }
 
-.main-content.secret .md-code,
-.container[data-theme='dark'] .main-content:not(.secret) .md-code {
+.main-content.secret .md-code {
   color: #f28b82;
   background: rgba(255, 255, 255, 0.08);
 }
 
-.main-content.secret .md-codeblock,
-.container[data-theme='dark'] .main-content:not(.secret) .md-codeblock {
+.main-content.secret .md-codeblock {
   color: #c58af9;
 }
 
-.main-content.secret .md-code-comment,
-.container[data-theme='dark'] .main-content:not(.secret) .md-code-comment {
+.main-content.secret .md-code-comment {
   color: #9aa0a6;
 }
 
-.main-content.secret .md-code-string,
-.container[data-theme='dark'] .main-content:not(.secret) .md-code-string {
+.main-content.secret .md-code-string {
   color: #81c995;
 }
 
-.main-content.secret .md-code-number,
-.container[data-theme='dark'] .main-content:not(.secret) .md-code-number {
+.main-content.secret .md-code-number {
   color: #fdd663;
 }
 
-.main-content.secret .md-code-keyword,
-.container[data-theme='dark'] .main-content:not(.secret) .md-code-keyword {
+.main-content.secret .md-code-keyword {
   color: #f28b82;
 }
 
-.main-content.secret .md-bold,
-.container[data-theme='dark'] .main-content:not(.secret) .md-bold {
+.main-content.secret .md-bold {
   color: #f9a875;
 }
 
-.main-content.secret .md-italic,
-.container[data-theme='dark'] .main-content:not(.secret) .md-italic {
+.main-content.secret .md-italic {
   color: #81c995;
 }
 
@@ -806,164 +783,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #bbb;
-}
-
-/* ダークテーマ（通常メモ）。シークレットメモは上の .main-content.secret の配色を使う */
-body:has(.container[data-theme='dark']) {
-  background: #1a1a1a;
-}
-
-.container[data-theme='dark'] {
-  background: #1a1a1a;
-  color: #e0e0e0;
-}
-
-.container[data-theme='dark'] .sidebar {
-  background: #202124;
-  border-right-color: #3a3a3a;
-  color: #e0e0e0;
-}
-
-.container[data-theme='dark'] .sidebar-header {
-  border-bottom-color: #3a3a3a;
-}
-
-.container[data-theme='dark'] .sidebar-title,
-.container[data-theme='dark'] .sidebar-close,
-.container[data-theme='dark'] .settings-btn,
-.container[data-theme='dark'] .help-btn {
-  color: #e0e0e0;
-}
-
-.container[data-theme='dark'] .sidebar-close:hover,
-.container[data-theme='dark'] .settings-btn:hover,
-.container[data-theme='dark'] .help-btn:hover,
-.container[data-theme='dark'] .memo-item:hover,
-.container[data-theme='dark'] .memo-item.active {
-  background: #333;
-}
-
-.container[data-theme='dark'] .memo-item.secret {
-  background: #2b2d31;
-}
-
-.container[data-theme='dark'] .memo-item.secret:hover,
-.container[data-theme='dark'] .memo-item.secret.active {
-  background: #3a3d42;
-}
-
-.container[data-theme='dark'] .search-input {
-  color: #e0e0e0;
-  border-bottom-color: #555;
-}
-
-.container[data-theme='dark'] .search-input:focus {
-  border-bottom-color: #ccc;
-}
-
-.container[data-theme='dark'] .main-content:not(.secret) {
-  background: #1a1a1a;
-}
-
-.container[data-theme='dark'] .main-content:not(.secret) .main-header {
-  border-bottom-color: #3a3a3a;
-}
-
-.container[data-theme='dark'] .main-content:not(.secret) .editor {
-  background: #1a1a1a;
-  border-color: #3a3a3a;
-}
-
-.container[data-theme='dark'] .main-content:not(.secret) .editor:focus-within {
-  border-color: #888;
-}
-
-.container[data-theme='dark'] .main-content:not(.secret) .content-input {
-  caret-color: #e8eaed;
-}
-
-.container[data-theme='dark'] .main-content:not(.secret) .editor-highlight {
-  color: #e8eaed;
-}
-
-/* 設定パネルはダークテーマの配色にする */
-.container[data-theme='dark'] .settings-header,
-.container[data-theme='dark'] .settings-section {
-  border-bottom-color: #4a4d52;
-}
-
-.container[data-theme='dark'] .settings-title {
-  color: #ecf0f1;
-}
-
-.container[data-theme='dark'] .settings-section {
-  color: #e0e0e0;
-}
-
-.container[data-theme='dark'] .settings-section h2,
-.container[data-theme='dark'] .settings-kind-title {
-  color: #9aa0a6;
-}
-
-.container[data-theme='dark'] .shortcut-row {
-  border-bottom-color: #4a4d52;
-}
-
-.container[data-theme='dark'] .shortcut-keys,
-.container[data-theme='dark'] .shortcut-description,
-.container[data-theme='dark'] .help-version {
-  color: #e0e0e0;
-}
-
-.container[data-theme='dark'] .settings-close-btn,
-.container[data-theme='dark'] .export-btn,
-.container[data-theme='dark'] .import-btn,
-.container[data-theme='dark'] .save-settings-btn,
-.container[data-theme='dark'] .reset-settings-btn,
-.container[data-theme='dark'] .settings-panel select {
-  border-color: #555;
-  color: #e0e0e0;
-}
-
-.container[data-theme='dark'] .settings-close-btn:hover,
-.container[data-theme='dark'] .export-btn:hover,
-.container[data-theme='dark'] .import-btn:hover,
-.container[data-theme='dark'] .save-settings-btn:hover,
-.container[data-theme='dark'] .reset-settings-btn:hover {
-  background: #3a3d42;
-}
-
-.container[data-theme='dark'] .delete-all-btn:hover {
-  background: rgba(231, 76, 60, 0.15);
-}
-
-.container[data-theme='dark'] .save-settings-btn {
-  border-color: #81c995;
-  color: #81c995;
-}
-
-.container[data-theme='dark'] .save-settings-btn:hover {
-  background: rgba(129, 201, 149, 0.15);
-}
-
-.container[data-theme='dark'] .reset-settings-btn {
-  border-color: #f28b82;
-  color: #f28b82;
-}
-
-.container[data-theme='dark'] .reset-settings-btn:hover {
-  background: rgba(242, 139, 130, 0.15);
-}
-
-.container[data-theme='dark'] .settings-panel select option {
-  background: #2b2d31;
-}
-
-.container[data-theme='dark'] ::-webkit-scrollbar-thumb {
-  background: #555;
-}
-
-.container[data-theme='dark'] .settings-panel.drop-active {
-  outline-color: #888;
-  background: rgba(255, 255, 255, 0.05);
 }

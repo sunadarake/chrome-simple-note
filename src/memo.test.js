@@ -652,26 +652,23 @@ describe('設定パネル', () => {
     expect(q('.normal-confirm-delete-input').checked).toBe(true);
     expect(q('.secret-confirm-delete-input').checked).toBe(true);
     expect(q('.font-size-input').value).toBe('16');
-    expect(q('.theme-input').value).toBe('light');
-    expect(q('.container').dataset.theme).toBe('light');
+    expect(q('.theme-input')).toBeNull();
+    expect(q('.container').dataset.theme).toBeUndefined();
   });
 
   it('変更しただけでは保存せず、すぐ画面には反映する', () => {
     const storage = start({ settings: null });
     change('.font-size-input', '20');
-    change('.theme-input', 'dark');
     expect(storage.data.settings).toBeUndefined();
     expect(q('.container').style.getPropertyValue('--editor-font-size')).toBe(
       '20px',
     );
-    expect(q('.container').dataset.theme).toBe('dark');
   });
 
   it('変更した設定は保存ボタンで保存し、再起動しても保たれる', () => {
     const storage = start({ settings: null });
     change('.normal-auto-save-delay-input', '3000');
     change('.font-size-input', '20');
-    change('.theme-input', 'dark');
     q('.save-settings-btn').click();
     expect(settingsOf(storage)).toEqual({
       autoSave: { normal: false, secret: false },
@@ -679,7 +676,6 @@ describe('設定パネル', () => {
       confirmDelete: { normal: true, secret: true },
       fontSize: 20,
       titleLength: 50,
-      theme: 'dark',
     });
     document.body.innerHTML = body;
     initMemoApp({
@@ -692,7 +688,7 @@ describe('設定パネル', () => {
     });
     expect(q('.normal-auto-save-delay-input').value).toBe('3000');
     expect(q('.font-size-input').value).toBe('20');
-    expect(q('.container').dataset.theme).toBe('dark');
+    expect(q('.container').dataset.theme).toBeUndefined();
   });
 
   describe('デフォルトに戻す', () => {
@@ -702,7 +698,6 @@ describe('設定パネル', () => {
       confirmDelete: { normal: false, secret: false },
       fontSize: 20,
       titleLength: 10,
-      theme: 'dark',
     };
 
     it('確認でキャンセルしたら設定を変えない', () => {
@@ -714,7 +709,6 @@ describe('設定パネル', () => {
       );
       expect(settingsOf(storage)).toEqual(customSettings);
       expect(q('.font-size-input').value).toBe('20');
-      expect(q('.container').dataset.theme).toBe('dark');
     });
 
     it('承諾すると既定値に戻して保存する', () => {
@@ -725,9 +719,8 @@ describe('設定パネル', () => {
       expect(settingsOf(storage)).toEqual(DEFAULT_SETTINGS);
       expect(q('.font-size-input').value).toBe('16');
       expect(q('.title-length-input').value).toBe('50');
-      expect(q('.theme-input').value).toBe('light');
       expect(q('.normal-confirm-delete-input').checked).toBe(true);
-      expect(q('.container').dataset.theme).toBe('light');
+      expect(q('.container').dataset.theme).toBeUndefined();
     });
   });
 

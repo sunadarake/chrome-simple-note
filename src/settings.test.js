@@ -25,7 +25,6 @@ describe('settings', () => {
       confirmDelete: { normal: true, secret: false },
       fontSize: 20,
       titleLength: 50,
-      theme: 'dark',
     };
     saveSettings(storage, settings);
     expect(loadSettings(storage)).toEqual(settings);
@@ -38,11 +37,15 @@ describe('settings', () => {
 
   it('一部の項目だけ無い・不正なときは、その項目だけ既定値にする', () => {
     const loaded = loadSettings(
-      fakeStorage(
-        JSON.stringify({ autoSave: 'yes', fontSize: 20, theme: 'x' }),
-      ),
+      fakeStorage(JSON.stringify({ autoSave: 'yes', fontSize: 20 })),
     );
     expect(loaded).toEqual({ ...DEFAULT_SETTINGS, fontSize: 20 });
+  });
+
+  it('旧形式の theme は無視して既定値にする', () => {
+    expect(loadSettings(fakeStorage(JSON.stringify({ theme: 'dark' })))).toEqual(
+      DEFAULT_SETTINGS,
+    );
   });
 
   it('範囲外の数値は範囲内に丸める', () => {
