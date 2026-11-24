@@ -91,6 +91,11 @@ describe('初期表示', () => {
     expect(q('.content-input').value).toBe('first');
     expect(items()[0].classList.contains('active')).toBe(true);
   });
+
+  it('起動時に表示したメモの本文欄にフォーカスする', () => {
+    start({ memos: [memo(1, 'a')] });
+    expect(document.activeElement).toBe(q('.content-input'));
+  });
 });
 
 describe('保存', () => {
@@ -216,6 +221,7 @@ describe('一覧と検索', () => {
     start({ memos: [memo(2, 'a'), memo(1, 'b')] });
     items()[1].click();
     expect(q('.content-input').value).toBe('b');
+    expect(document.activeElement).toBe(q('.content-input'));
   });
 
   it('検索語に合うメモだけ表示する', () => {
@@ -398,6 +404,12 @@ describe('シークレットメモ', () => {
     expect(items()[0].textContent).toBe('🔒 無題のメモ');
     expect(items()[0].classList.contains('active')).toBe(true);
     expect(items()[1].textContent).toBe('a');
+  });
+
+  it('シークレットメモを開くと本文欄にフォーカスする', () => {
+    start({ memos: [memo(1, 'a')] });
+    createSecret();
+    expect(document.activeElement).toBe(q('.content-input'));
   });
 
   it('何も書かないシークレットメモは sessionStorage にも書かない', () => {

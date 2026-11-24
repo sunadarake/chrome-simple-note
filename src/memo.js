@@ -156,6 +156,7 @@ export function initMemoApp({
     titleDisplay.hidden = false;
     updateTitleDisplay();
     renderMemoList();
+    contentInput.focus();
   }
 
   function updateHighlight() {
