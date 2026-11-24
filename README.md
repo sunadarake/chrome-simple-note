@@ -51,6 +51,7 @@ Chrome で `chrome://extensions` を開き、「デベロッパーモード」�
 | `npm test` | テストを実行する |
 | `npm run lint` | ESLint を実行する |
 | `npm run typecheck` | 型チェックを実行する |
+| `npm run check:quiet` | テスト・lint・型チェックを順に実行する。成功時は1行、失敗時は全出力を表示する |
 | `npm run format` | Prettier で整形する |
 | `./build_for_test.sh` | 動作確認用に zip を `release/` に作る |
 | `./publish.sh` | zip を作って GitHub Release に公開する。公開後、古い Release とタグを自動で削除する |

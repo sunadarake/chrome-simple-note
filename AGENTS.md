@@ -15,6 +15,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - テスト: `npm test`
 - lint: `npm run lint`
 - 型チェック: `npm run typecheck`
+- 出力を簡潔にする確認: `npm run check:quiet`（テスト・lint・型チェックを順に実行し、成功は `ok:` の1行、失敗は全出力。個別は `test:quiet` / `lint:quiet` / `typecheck:quiet`。実体は `quiet.sh`）
 - 整形: `npm run format`（確認のみは `npx prettier --check .`）
 - ビルド: なし
 - リリース: `./build_for_test.sh`（動作確認用に `release/` へ zip を作る）、`./publish.sh`（zip を作って GitHub Release に公開する）
