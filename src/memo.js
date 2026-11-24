@@ -15,6 +15,8 @@ import { loadMemos, saveMemos } from './storage.js';
 
 const LOG_DISPLAY_MS = 3000;
 const UNDO_LIMIT = 100;
+const SECRET_ICON =
+  '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 56V28C12 15 21 8 32 8C43 8 52 15 52 28V56L45 50L38.5 56L32 50L25.5 56L19 50Z"/><circle cx="25" cy="28" r="2.5" fill="currentColor" stroke="none"/><circle cx="39" cy="28" r="2.5" fill="currentColor" stroke="none"/></svg>';
 
 /**
  * @param {object} deps
@@ -126,9 +128,12 @@ export function initMemoApp({
       }
       if (memo.secret) {
         memoItem.classList.add('secret');
+        const icon = document.createElement('span');
+        icon.className = 'secret-icon';
+        icon.innerHTML = SECRET_ICON;
+        memoItem.append(icon);
       }
-      memoItem.textContent =
-        (memo.secret ? '🔒 ' : '') + (memo.title || '無題のメモ');
+      memoItem.append(memo.title || '無題のメモ');
       // 一覧では先頭20文字しか見えないので、ツールチップで1行目を全部見せる
       memoItem.title = memo.content.split('\n')[0];
       memoItem.addEventListener('click', () => {

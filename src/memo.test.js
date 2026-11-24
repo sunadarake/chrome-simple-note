@@ -409,9 +409,11 @@ describe('シークレットメモ', () => {
     const storage = start({ memos: [memo(1, 'a')] });
     createSecret();
     expect(sessionStored(storage)).toBeNull();
-    expect(items()[0].textContent).toBe('🔒 無題のメモ');
+    expect(items()[0].textContent).toBe('無題のメモ');
+    expect(items()[0].querySelector('.secret-icon')).not.toBeNull();
     expect(items()[0].classList.contains('active')).toBe(true);
     expect(items()[1].textContent).toBe('a');
+    expect(items()[1].querySelector('.secret-icon')).toBeNull();
   });
 
   it('シークレットメモを開くと本文欄にフォーカスする', () => {
@@ -443,7 +445,7 @@ describe('シークレットメモ', () => {
       title: '秘密の題',
     });
     expect(stored(storage).every((m) => !m.secret)).toBe(true);
-    expect(items()[0].textContent).toBe('🔒 秘密の題');
+    expect(items()[0].textContent).toBe('秘密の題');
   });
 
   it('保存と自動保存は sessionStorage にだけ書く', () => {
@@ -456,7 +458,7 @@ describe('シークレットメモ', () => {
     q('.save-btn').click();
     expect(sessionStored(storage)[0].content).toBe('saved text');
     expect(JSON.stringify(stored(storage))).not.toContain('text');
-    expect(items()[0].textContent).toBe('🔒 saved text');
+    expect(items()[0].textContent).toBe('saved text');
   });
 
   it('検索の対象に含まれる', () => {
@@ -466,7 +468,7 @@ describe('シークレットメモ', () => {
     q('.save-btn').click();
     q('.search-input').value = 'ban';
     q('.search-input').dispatchEvent(new Event('input'));
-    expect(items().map((i) => i.textContent)).toEqual(['🔒 banana']);
+    expect(items().map((i) => i.textContent)).toEqual(['banana']);
   });
 
   it('削除すると sessionStorage から消える', () => {
@@ -869,7 +871,7 @@ describe('設定パネル', () => {
         'あ'.repeat(10),
       );
       expect(items().map((i) => i.textContent)).toEqual([
-        '🔒 ' + 'あ'.repeat(10),
+        'あ'.repeat(10),
         'あ'.repeat(10),
         'あ'.repeat(10),
       ]);
@@ -941,7 +943,7 @@ describe('設定パネル', () => {
       );
       expect(stored(storage)).toEqual([]);
       expect(JSON.parse(storage.session.data.memos)).toHaveLength(1);
-      expect(items().map((i) => i.textContent)).toEqual(['🔒 secret']);
+      expect(items().map((i) => i.textContent)).toEqual(['secret']);
       expect(q('.log-message').dataset.kind).toBe('delete');
     });
 
