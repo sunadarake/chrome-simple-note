@@ -31,6 +31,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - `src/memo-transfer.js` メモのエクスポート（JSON）とインポート（検証・マージ）を行う純粋関数
 - `src/shortcuts.js` メモ画面のキーボードショートカットの `keydown` をまとめる。ヘルプ画面用の一覧 `SHORTCUTS` も持つ
 - `src/memo-store.js` メモの作成・更新・削除・検索を行う純粋関数
+- `src/dom.js` 要素を探して、なければ例外を投げる `query`（メモ画面とサイドバーで共有）
 - `src/sidebar.js` サイドバーの幅のドラッグ変更と、ボタンでの開閉（メモ本体とは独立）
 - `src/settings.js` 設定（メモ種別ごとの自動保存・間隔・削除確認、文字サイズ・タイトルの文字数）の読み込み（検証・丸め・旧形式の移行）と保存を行う
 - `src/storage.js` `localStorage`（通常メモ）と `sessionStorage`（シークレットメモ）への読み書き

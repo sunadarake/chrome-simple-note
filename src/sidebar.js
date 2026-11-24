@@ -1,3 +1,5 @@
+import { query } from './dom.js';
+
 const STORAGE_KEY = 'sidebarWidth';
 const COLLAPSED_KEY = 'sidebarCollapsed';
 const MIN_WIDTH = 200;
@@ -6,18 +8,6 @@ const DEFAULT_WIDTH = 280;
 
 /** @param {number} width */
 const clamp = (width) => Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
-
-/**
- * @param {ParentNode} root
- * @param {string} selector
- */
-function query(root, selector) {
-  const element = /** @type {HTMLElement | null} */ (
-    root.querySelector(selector)
-  );
-  if (!element) throw new Error(`要素が見つかりません: ${selector}`);
-  return element;
-}
 
 /**
  * サイドバーの右端のドラッグで幅を変え、変えた幅を保存する

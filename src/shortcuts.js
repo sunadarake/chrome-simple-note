@@ -35,25 +35,26 @@ export function initShortcuts({
     const key = /** @type {KeyboardEvent} */ (event);
     if (!isActive() || key.repeat || key.isComposing) return;
     const withCtrl = key.ctrlKey && !key.altKey && !key.metaKey;
+    const name = key.key.toLowerCase();
 
-    if (withCtrl && key.key.toLowerCase() === 'c') {
+    if (withCtrl && name === 'c') {
       // 選択中のテキストはブラウザ既定のコピーに任せる
       if (hasSelection()) return;
       key.preventDefault();
       copy();
       return;
     }
-    if (withCtrl && key.key.toLowerCase() === 's') {
+    if (withCtrl && name === 's') {
       key.preventDefault();
       save();
       return;
     }
-    if (withCtrl && key.key.toLowerCase() === 'u') {
+    if (withCtrl && name === 'u') {
       key.preventDefault();
       undo();
       return;
     }
-    if (withCtrl && key.key.toLowerCase() === 'o') {
+    if (withCtrl && name === 'o') {
       key.preventDefault();
       if (key.shiftKey) {
         newSecretMemo();

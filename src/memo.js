@@ -1,3 +1,4 @@
+import { query } from './dom.js';
 import { highlightMarkdown } from './markdown-highlight.js';
 import { exportMemos, mergeMemos, parseImport } from './memo-transfer.js';
 import {
@@ -37,67 +38,61 @@ export function initMemoApp({
   version,
 }) {
   /** @param {string} selector */
-  const query = (selector) => {
-    const element = root.querySelector(selector);
-    if (!element) throw new Error(`要素が見つかりません: ${selector}`);
-    return element;
-  };
-  const newMemoBtn = query('.new-memo-btn');
-  const secretMemoBtn = query('.secret-memo-btn');
-  const searchInput = /** @type {HTMLInputElement} */ (query('.search-input'));
-  const memoList = query('.memo-list');
-  const mainContent = query('.main-content');
-  const secretLabel = /** @type {HTMLElement} */ (query('.secret-label'));
-  const titleDisplay = /** @type {HTMLElement} */ (query('.title-display'));
-  const titleInput = /** @type {HTMLInputElement} */ (query('.title-input'));
-  const contentInput = /** @type {HTMLTextAreaElement} */ (
-    query('.content-input')
-  );
-  const highlightLayer = query('.editor-highlight');
-  const copyBtn = query('.copy-btn');
-  const saveBtn = query('.save-btn');
-  const deleteBtn = query('.delete-btn');
-  const logMessage = /** @type {HTMLElement} */ (query('.log-message'));
-  const container = /** @type {HTMLElement} */ (query('.container'));
-  const mainHeader = /** @type {HTMLElement} */ (query('.main-header'));
-  const editor = /** @type {HTMLElement} */ (query('.editor'));
-  const settingsBtn = query('.settings-btn');
-  const settingsPanel = /** @type {HTMLElement} */ (query('.settings-panel'));
-  const settingsCloseBtn = query('.settings-close-btn');
-  const helpBtn = query('.help-btn');
-  const helpPanel = /** @type {HTMLElement} */ (query('.help-panel'));
-  const helpCloseBtn = query('.help-close-btn');
-  const shortcutList = query('.shortcut-list');
-  const helpVersion = /** @type {HTMLElement} */ (query('.help-version'));
-  const exportBtn = query('.export-btn');
-  const importBtn = query('.import-btn');
-  const deleteAllBtn = query('.delete-all-btn');
-  const saveSettingsBtn = query('.save-settings-btn');
-  const resetSettingsBtn = query('.reset-settings-btn');
-  const importInput = /** @type {HTMLInputElement} */ (query('.import-input'));
+  const $ = (selector) => query(root, selector);
+  const newMemoBtn = $('.new-memo-btn');
+  const secretMemoBtn = $('.secret-memo-btn');
+  const searchInput = /** @type {HTMLInputElement} */ ($('.search-input'));
+  const memoList = $('.memo-list');
+  const mainContent = $('.main-content');
+  const secretLabel = /** @type {HTMLElement} */ ($('.secret-label'));
+  const titleDisplay = /** @type {HTMLElement} */ ($('.title-display'));
+  const titleInput = /** @type {HTMLInputElement} */ ($('.title-input'));
+  const contentInput = /** @type {HTMLTextAreaElement} */ ($('.content-input'));
+  const highlightLayer = $('.editor-highlight');
+  const copyBtn = $('.copy-btn');
+  const saveBtn = $('.save-btn');
+  const deleteBtn = $('.delete-btn');
+  const logMessage = /** @type {HTMLElement} */ ($('.log-message'));
+  const container = /** @type {HTMLElement} */ ($('.container'));
+  const mainHeader = /** @type {HTMLElement} */ ($('.main-header'));
+  const editor = /** @type {HTMLElement} */ ($('.editor'));
+  const settingsBtn = $('.settings-btn');
+  const settingsPanel = /** @type {HTMLElement} */ ($('.settings-panel'));
+  const settingsCloseBtn = $('.settings-close-btn');
+  const helpBtn = $('.help-btn');
+  const helpPanel = /** @type {HTMLElement} */ ($('.help-panel'));
+  const helpCloseBtn = $('.help-close-btn');
+  const shortcutList = $('.shortcut-list');
+  const helpVersion = /** @type {HTMLElement} */ ($('.help-version'));
+  const exportBtn = $('.export-btn');
+  const importBtn = $('.import-btn');
+  const deleteAllBtn = $('.delete-all-btn');
+  const saveSettingsBtn = $('.save-settings-btn');
+  const resetSettingsBtn = $('.reset-settings-btn');
+  const importInput = /** @type {HTMLInputElement} */ ($('.import-input'));
   const normalAutoSaveInput = /** @type {HTMLInputElement} */ (
-    query('.normal-auto-save-input')
+    $('.normal-auto-save-input')
   );
   const normalAutoSaveDelayInput = /** @type {HTMLSelectElement} */ (
-    query('.normal-auto-save-delay-input')
+    $('.normal-auto-save-delay-input')
   );
   const secretAutoSaveInput = /** @type {HTMLInputElement} */ (
-    query('.secret-auto-save-input')
+    $('.secret-auto-save-input')
   );
   const secretAutoSaveDelayInput = /** @type {HTMLSelectElement} */ (
-    query('.secret-auto-save-delay-input')
+    $('.secret-auto-save-delay-input')
   );
   const normalConfirmDeleteInput = /** @type {HTMLInputElement} */ (
-    query('.normal-confirm-delete-input')
+    $('.normal-confirm-delete-input')
   );
   const secretConfirmDeleteInput = /** @type {HTMLInputElement} */ (
-    query('.secret-confirm-delete-input')
+    $('.secret-confirm-delete-input')
   );
   const fontSizeInput = /** @type {HTMLSelectElement} */ (
-    query('.font-size-input')
+    $('.font-size-input')
   );
   const titleLengthInput = /** @type {HTMLSelectElement} */ (
-    query('.title-length-input')
+    $('.title-length-input')
   );
 
   let memos = loadMemos(storage, sessionStorage);
@@ -349,7 +344,6 @@ export function initMemoApp({
     const kind = currentKind();
     if (!settings.autoSave[kind]) return;
     autoSaveTimer = setTimeout(() => {
-      // 本文もタイトルも空のメモは保存しない
       if (
         currentId !== null &&
         (contentInput.value !== lastContent ||
