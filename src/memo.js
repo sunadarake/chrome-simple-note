@@ -15,8 +15,7 @@ import { loadMemos, saveMemos } from './storage.js';
 
 const LOG_DISPLAY_MS = 3000;
 const UNDO_LIMIT = 100;
-const SECRET_ICON =
-  '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 56V28C12 15 21 8 32 8C43 8 52 15 52 28V56L45 50L38.5 56L32 50L25.5 56L19 50Z"/><circle cx="25" cy="28" r="2.5" fill="currentColor" stroke="none"/><circle cx="39" cy="28" r="2.5" fill="currentColor" stroke="none"/></svg>';
+const SECRET_ICON = '<svg aria-hidden="true"><use href="#ghost" /></svg>';
 
 /**
  * @param {object} deps

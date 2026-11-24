@@ -158,6 +158,11 @@ body {
 .secret-icon svg {
   width: 1em;
   height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .memo-item.secret:hover {
