@@ -4,8 +4,8 @@
       "*" : "allow",
       "bash" : {
          "*" : "allow",
-         "rm *" : "ask",
-         "rmdir *" : "ask"
+         "rm *" : "allow",
+         "rmdir *" : "allow"
       },
       "edit" : "allow",
       "external_directory" : {
