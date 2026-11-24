@@ -158,11 +158,29 @@ body {
 .secret-icon svg {
   width: 1em;
   height: 1em;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  fill: currentColor;
+}
+
+/* 目の色は、おばけが載る背景色に合わせる */
+.memo-item.secret {
+  --ghost-eye: #e4e6e8;
+}
+
+.memo-item.secret:hover,
+.memo-item.secret.active {
+  --ghost-eye: #d9dcde;
+}
+
+.secret-memo-btn {
+  --ghost-eye: #2b2d31;
+}
+
+.secret-memo-btn:hover {
+  --ghost-eye: #1e1f22;
+}
+
+.secret-label {
+  --ghost-eye: #566573;
 }
 
 .memo-item.secret:hover {
