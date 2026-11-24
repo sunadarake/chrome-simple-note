@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# release.sh で作った zip を GitHub Release に公開する
+# 配布用の zip を作り、GitHub Release に公開する
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -24,7 +24,11 @@ if gh release list --json tagName --jq '.[].tagName' | grep -qx "$tag"; then
   exit 1
 fi
 
-./release.sh
+# 前のバージョンの zip が残らないよう、作る前に消す
+mkdir -p release
+rm -f release/*.zip
+# テストファイルは拡張機能の実行に不要なので含めない
+zip -r "$zip_path" manifest.json LICENSE icons src -x '*.test.js'
 
 notes_file=$(mktemp)
 trap 'rm -f "$notes_file"' EXIT

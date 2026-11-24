@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 配布用の zip を release/ に作る
+# 動作確認用に、配布用と同じ zip を release/ に作る（公開は publish.sh）
 set -euo pipefail
 
 cd "$(dirname "$0")"

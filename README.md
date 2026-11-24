@@ -52,8 +52,8 @@ Chrome で `chrome://extensions` を開き、「デベロッパーモード」�
 | `npm run lint` | ESLint を実行する |
 | `npm run typecheck` | 型チェックを実行する |
 | `npm run format` | Prettier で整形する |
-| `./release.sh` | 配布用の zip を `release/` に作る |
-| `./publish.sh` | zip を GitHub Release に公開する。公開後、古い Release とタグを自動で削除する |
+| `./build_for_test.sh` | 動作確認用に zip を `release/` に作る |
+| `./publish.sh` | zip を作って GitHub Release に公開する。公開後、古い Release とタグを自動で削除する |
 
 ## ライセンス
 [MIT License](LICENSE)
