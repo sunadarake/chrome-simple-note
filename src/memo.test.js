@@ -504,6 +504,24 @@ describe('シークレットメモ', () => {
       expect(q('.secret-label').hidden).toBe(true);
     });
 
+    it('設定を開くと panel-open が付き、閉じると外れる', () => {
+      start({ memos: [memo(1, 'a')] });
+      createSecret();
+      q('.settings-btn').click();
+      expect(q('.main-content').classList.contains('panel-open')).toBe(true);
+      expect(isSecretView()).toBe(true);
+      q('.settings-close-btn').click();
+      expect(q('.main-content').classList.contains('panel-open')).toBe(false);
+      expect(isSecretView()).toBe(true);
+    });
+
+    it('ヘルプを開いても panel-open が付く', () => {
+      start({ memos: [memo(1, 'a')] });
+      createSecret();
+      q('.help-btn').click();
+      expect(q('.main-content').classList.contains('panel-open')).toBe(true);
+    });
+
     it('シークレットメモを削除して通常メモが開くと元に戻る', () => {
       start({ memos: [memo(1, 'a')] });
       createSecret();

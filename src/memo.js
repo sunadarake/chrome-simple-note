@@ -379,6 +379,7 @@ export function initMemoApp({
   // 設定・ヘルプを開いている間は、メモのタイトル行とエディタを隠す
   function syncMainVisibility() {
     const panelOpen = !settingsPanel.hidden || !helpPanel.hidden;
+    mainContent.classList.toggle('panel-open', panelOpen);
     mainHeader.hidden = panelOpen;
     editor.hidden = panelOpen;
   }

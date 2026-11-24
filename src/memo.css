@@ -565,6 +565,11 @@ body {
   background: #2b2d31;
 }
 
+/* 設定・ヘルプはシークレットの配色から切り離し、余白まで通常の白背景にする */
+.main-content.secret.panel-open {
+  background: #ffffff;
+}
+
 .main-content.secret .title-display,
 .container[data-theme='dark'] .main-content:not(.secret) .title-display,
 .main-content.secret .title-input,
@@ -881,42 +886,32 @@ body:has(.container[data-theme='dark']) {
   color: #e8eaed;
 }
 
-/* 設定パネルは、ダークテーマとシークレットメモで同じ配色にする */
+/* 設定パネルはダークテーマの配色にする */
 .container[data-theme='dark'] .settings-header,
-.container[data-theme='dark'] .settings-section,
-.main-content.secret .settings-header,
-.main-content.secret .settings-section {
+.container[data-theme='dark'] .settings-section {
   border-bottom-color: #4a4d52;
 }
 
-.container[data-theme='dark'] .settings-title,
-.main-content.secret .settings-title {
+.container[data-theme='dark'] .settings-title {
   color: #ecf0f1;
 }
 
-.container[data-theme='dark'] .settings-section,
-.main-content.secret .settings-section {
+.container[data-theme='dark'] .settings-section {
   color: #e0e0e0;
 }
 
 .container[data-theme='dark'] .settings-section h2,
-.container[data-theme='dark'] .settings-kind-title,
-.main-content.secret .settings-section h2,
-.main-content.secret .settings-kind-title {
+.container[data-theme='dark'] .settings-kind-title {
   color: #9aa0a6;
 }
 
-.container[data-theme='dark'] .shortcut-row,
-.main-content.secret .shortcut-row {
+.container[data-theme='dark'] .shortcut-row {
   border-bottom-color: #4a4d52;
 }
 
 .container[data-theme='dark'] .shortcut-keys,
 .container[data-theme='dark'] .shortcut-description,
-.container[data-theme='dark'] .help-version,
-.main-content.secret .shortcut-keys,
-.main-content.secret .shortcut-description,
-.main-content.secret .help-version {
+.container[data-theme='dark'] .help-version {
   color: #e0e0e0;
 }
 
@@ -925,13 +920,7 @@ body:has(.container[data-theme='dark']) {
 .container[data-theme='dark'] .import-btn,
 .container[data-theme='dark'] .save-settings-btn,
 .container[data-theme='dark'] .reset-settings-btn,
-.container[data-theme='dark'] .settings-panel select,
-.main-content.secret .settings-close-btn,
-.main-content.secret .export-btn,
-.main-content.secret .import-btn,
-.main-content.secret .save-settings-btn,
-.main-content.secret .reset-settings-btn,
-.main-content.secret .settings-panel select {
+.container[data-theme='dark'] .settings-panel select {
   border-color: #555;
   color: #e0e0e0;
 }
@@ -940,44 +929,33 @@ body:has(.container[data-theme='dark']) {
 .container[data-theme='dark'] .export-btn:hover,
 .container[data-theme='dark'] .import-btn:hover,
 .container[data-theme='dark'] .save-settings-btn:hover,
-.container[data-theme='dark'] .reset-settings-btn:hover,
-.main-content.secret .settings-close-btn:hover,
-.main-content.secret .export-btn:hover,
-.main-content.secret .import-btn:hover,
-.main-content.secret .save-settings-btn:hover,
-.main-content.secret .reset-settings-btn:hover {
+.container[data-theme='dark'] .reset-settings-btn:hover {
   background: #3a3d42;
 }
 
-.container[data-theme='dark'] .delete-all-btn:hover,
-.main-content.secret .delete-all-btn:hover {
+.container[data-theme='dark'] .delete-all-btn:hover {
   background: rgba(231, 76, 60, 0.15);
 }
 
-.container[data-theme='dark'] .save-settings-btn,
-.main-content.secret .save-settings-btn {
+.container[data-theme='dark'] .save-settings-btn {
   border-color: #81c995;
   color: #81c995;
 }
 
-.container[data-theme='dark'] .save-settings-btn:hover,
-.main-content.secret .save-settings-btn:hover {
+.container[data-theme='dark'] .save-settings-btn:hover {
   background: rgba(129, 201, 149, 0.15);
 }
 
-.container[data-theme='dark'] .reset-settings-btn,
-.main-content.secret .reset-settings-btn {
+.container[data-theme='dark'] .reset-settings-btn {
   border-color: #f28b82;
   color: #f28b82;
 }
 
-.container[data-theme='dark'] .reset-settings-btn:hover,
-.main-content.secret .reset-settings-btn:hover {
+.container[data-theme='dark'] .reset-settings-btn:hover {
   background: rgba(242, 139, 130, 0.15);
 }
 
-.container[data-theme='dark'] .settings-panel select option,
-.main-content.secret .settings-panel select option {
+.container[data-theme='dark'] .settings-panel select option {
   background: #2b2d31;
 }
 
@@ -985,8 +963,7 @@ body:has(.container[data-theme='dark']) {
   background: #555;
 }
 
-.container[data-theme='dark'] .settings-panel.drop-active,
-.main-content.secret .settings-panel.drop-active {
+.container[data-theme='dark'] .settings-panel.drop-active {
   outline-color: #888;
   background: rgba(255, 255, 255, 0.05);
 }
