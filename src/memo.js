@@ -554,18 +554,35 @@ export function initMemoApp({
 
   function renderHelp() {
     shortcutList.innerHTML = '';
+    const table = document.createElement('table');
+    table.className = 'shortcut-table';
+    const headRow = document.createElement('tr');
+    for (const label of ['キー', '動作']) {
+      const head = document.createElement('th');
+      head.scope = 'col';
+      head.textContent = label;
+      headRow.appendChild(head);
+    }
+    const head = document.createElement('thead');
+    head.appendChild(headRow);
+    const body = document.createElement('tbody');
     for (const { keys, description } of SHORTCUTS) {
-      const row = document.createElement('div');
-      row.className = 'shortcut-row';
-      const key = document.createElement('span');
+      const row = document.createElement('tr');
+      const key = document.createElement('th');
       key.className = 'shortcut-keys';
-      key.textContent = keys;
-      const text = document.createElement('span');
+      key.scope = 'row';
+      const keycap = document.createElement('span');
+      keycap.className = 'shortcut-keycap';
+      keycap.textContent = keys;
+      key.appendChild(keycap);
+      const text = document.createElement('td');
       text.className = 'shortcut-description';
       text.textContent = description;
       row.append(key, text);
-      shortcutList.appendChild(row);
+      body.appendChild(row);
     }
+    table.append(head, body);
+    shortcutList.appendChild(table);
     helpVersion.textContent = `v${version}`;
   }
 

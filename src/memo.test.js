@@ -465,6 +465,18 @@ describe('ヘルプ', () => {
     expect(q('.help-version').textContent).toBe('v1.2.3');
   });
 
+  it('キーと動作の見出し付きの表で表示する', () => {
+    start();
+    q('.help-btn').click();
+    expect(q('.shortcut-table')).not.toBeNull();
+    expect(
+      [...document.querySelectorAll('.shortcut-table thead th')].map(
+        (element) => element.textContent,
+      ),
+    ).toEqual(['キー', '動作']);
+    expect(q('.shortcut-keycap').textContent).toBe('Ctrl+C');
+  });
+
   it('「閉じる」で元のメモ画面に戻る', () => {
     start();
     q('.help-btn').click();

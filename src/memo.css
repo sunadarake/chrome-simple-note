@@ -336,25 +336,52 @@ body {
 }
 
 /* ヘルプ画面。設定パネルと同じ見出し・セクションを使う */
-.shortcut-row {
-  display: flex;
-  gap: 12px;
-  padding: 6px 0;
+.shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shortcut-table tr {
   border-bottom: 1px solid #eee;
 }
 
-.shortcut-row:last-child {
+.shortcut-table tbody tr:last-child {
   border-bottom: none;
 }
 
+.shortcut-table thead th {
+  padding: 0 0 6px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 400;
+  color: #999;
+}
+
+/* キーの列は一番長いキーに合わせて縮め、動作の説明に幅を回す */
 .shortcut-keys {
-  flex: 0 0 80px;
+  width: 1%;
+  padding: 7px 16px 7px 0;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.shortcut-keycap {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fafafa;
   font-family: monospace;
   font-size: 14px;
+  font-weight: 400;
   color: #333;
 }
 
 .shortcut-description {
+  padding: 9px 0 7px;
+  vertical-align: top;
   font-size: 14px;
   color: #555;
 }
