@@ -180,7 +180,7 @@ body {
 }
 
 .secret-label {
-  --ghost-eye: #566573;
+  --ghost-eye: #1e1e1e;
 }
 
 .memo-item.secret:hover {
@@ -676,7 +676,7 @@ body {
   height: 30px;
   line-height: 30px;
   padding: 0 11px;
-  background: #566573;
+  background: #1e1e1e;
   color: #ecf0f1;
   font-size: 14px;
 }
