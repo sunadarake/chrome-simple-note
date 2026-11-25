@@ -36,6 +36,17 @@ function clampNumber(value, range, fallback) {
 }
 
 /**
+ * 保存値がオブジェクトでなければ、空のオブジェクトとして扱う
+ * @param {unknown} value
+ * @returns {Record<string, unknown>}
+ */
+function asRecord(value) {
+  return /** @type {Record<string, unknown>} */ (
+    value !== null && typeof value === 'object' ? value : {}
+  );
+}
+
+/**
  * メモ種別ごとの真偽値。旧形式の boolean は通常メモに引き継ぐ
  * @param {unknown} value
  * @param {PerKindBoolean} fallback
@@ -45,9 +56,7 @@ function booleansPerKind(value, fallback) {
   if (typeof value === 'boolean') {
     return { normal: value, secret: fallback.secret };
   }
-  const saved = /** @type {Record<string, unknown>} */ (
-    value !== null && typeof value === 'object' ? value : {}
-  );
+  const saved = asRecord(value);
   return {
     normal: typeof saved.normal === 'boolean' ? saved.normal : fallback.normal,
     secret: typeof saved.secret === 'boolean' ? saved.secret : fallback.secret,
@@ -68,9 +77,7 @@ function numbersPerKind(value, range, fallback) {
       secret: fallback.secret,
     };
   }
-  const saved = /** @type {Record<string, unknown>} */ (
-    value !== null && typeof value === 'object' ? value : {}
-  );
+  const saved = asRecord(value);
   return {
     normal: clampNumber(saved.normal, range, fallback.normal),
     secret: clampNumber(saved.secret, range, fallback.secret),

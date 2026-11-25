@@ -121,6 +121,13 @@ export function initMemoApp({
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   let logTimer;
 
+  function secretIcon() {
+    const icon = document.createElement('span');
+    icon.className = 'secret-icon';
+    icon.innerHTML = SECRET_ICON;
+    return icon;
+  }
+
   function renderMemoList() {
     memoList.innerHTML = '';
     for (const memo of filterMemos(memos, searchInput.value)) {
@@ -131,10 +138,7 @@ export function initMemoApp({
       }
       if (memo.secret) {
         memoItem.classList.add('secret');
-        const icon = document.createElement('span');
-        icon.className = 'secret-icon';
-        icon.innerHTML = SECRET_ICON;
-        memoItem.append(icon);
+        memoItem.append(secretIcon());
       }
       memoItem.append(memo.title || '無題のメモ');
       // 一覧では先頭20文字しか見えないので、ツールチップで1行目を全部見せる
@@ -166,10 +170,7 @@ export function initMemoApp({
       const title = document.createElement('span');
       title.className = 'search-result-title';
       if (memo.secret) {
-        const icon = document.createElement('span');
-        icon.className = 'secret-icon';
-        icon.innerHTML = SECRET_ICON;
-        title.append(icon);
+        title.append(secretIcon());
       }
       title.append(memo.title || '無題のメモ');
       const preview = document.createElement('span');
@@ -224,6 +225,12 @@ export function initMemoApp({
     titleDisplay.textContent =
       titleFor(contentInput.value, customTitle, settings.titleLength) ||
       '新しいメモ';
+  }
+
+  function refreshEditor() {
+    updateHighlight();
+    updateTitleDisplay();
+    scheduleAutoSave();
   }
 
   function startTitleEdit() {
@@ -359,9 +366,7 @@ export function initMemoApp({
       redoHistory = [];
       undoValue = contentInput.value;
     }
-    updateHighlight();
-    updateTitleDisplay();
-    scheduleAutoSave();
+    refreshEditor();
   }
 
   function undoContent() {
@@ -373,9 +378,7 @@ export function initMemoApp({
     redoHistory.push(undoValue);
     undoValue = previous;
     contentInput.value = previous;
-    updateHighlight();
-    updateTitleDisplay();
-    scheduleAutoSave();
+    refreshEditor();
   }
 
   function redoContent() {
@@ -388,9 +391,7 @@ export function initMemoApp({
     if (undoHistory.length > UNDO_LIMIT) undoHistory.shift();
     undoValue = next;
     contentInput.value = next;
-    updateHighlight();
-    updateTitleDisplay();
-    scheduleAutoSave();
+    refreshEditor();
   }
 
   function hasSelection() {
@@ -425,6 +426,10 @@ export function initMemoApp({
         persistCurrentContent();
       }
     }, settings.autoSaveDelayMs[kind]);
+  }
+
+  function cancelAutoSaveIfOff() {
+    if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
   }
 
   function copyContent() {
@@ -624,7 +629,7 @@ export function initMemoApp({
     settings.confirmDelete.secret = secretConfirmDeleteInput.checked;
     settings.fontSize = Number(fontSizeInput.value);
     settings.titleLength = Number(titleLengthInput.value);
-    if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
+    cancelAutoSaveIfOff();
     applySettings();
     retitleAll();
     renderMemoList();
@@ -643,7 +648,7 @@ export function initMemoApp({
     settings.confirmDelete = { ...DEFAULT_SETTINGS.confirmDelete };
     settings.fontSize = DEFAULT_SETTINGS.fontSize;
     settings.titleLength = DEFAULT_SETTINGS.titleLength;
-    if (!settings.autoSave[currentKind()]) clearTimeout(autoSaveTimer);
+    cancelAutoSaveIfOff();
     showSettings();
     retitleAll();
     renderMemoList();
