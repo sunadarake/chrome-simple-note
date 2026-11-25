@@ -5,7 +5,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 
 ## 技術スタック
 - 言語: JavaScript（ES Modules、ビルドなし。型は JSDoc + `tsc --checkJs`）
-- 実行環境: Chrome拡張機能（Manifest V3）
+- 実行環境: Chrome拡張機能（Manifest V3）。開発ツールは Node.js 26（`.nvmrc`。`nvm use` で切り替える）
 - テスト: Vitest（jsdom）
 - 静的解析・整形: ESLint、Prettier
 - パッケージ管理: pnpm
