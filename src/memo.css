@@ -273,12 +273,14 @@ body {
 .main-header[hidden],
 .editor[hidden],
 .settings-panel[hidden],
-.help-panel[hidden] {
+.help-panel[hidden],
+.search-panel[hidden] {
   display: none;
 }
 
 .settings-panel,
-.help-panel {
+.help-panel,
+.search-panel {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -361,6 +363,72 @@ body {
   margin: 0;
   font-size: 15px;
   color: #333;
+}
+
+/* 全メモ検索。設定パネルと同じ見出しを使う */
+.search-panel-input {
+  width: 100%;
+  padding: 10px 6px;
+  margin: 12px 0;
+  border: 0;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+  background: transparent;
+  color: #333;
+  font-size: 16px;
+}
+
+.search-panel-input:focus {
+  border-bottom-color: #333;
+  outline: none;
+}
+
+.search-result {
+  display: block;
+  width: 100%;
+  padding: 8px 6px;
+  border: 0;
+  border-bottom: 1px solid #eee;
+  background: transparent;
+  color: #333;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  --ghost-eye: #ffffff;
+}
+
+.search-result:hover {
+  background: #eee;
+  --ghost-eye: #eeeeee;
+}
+
+.search-result-title {
+  display: block;
+  font-size: 15px;
+}
+
+.search-result-preview {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: #666;
+}
+
+/* 色を増やさないよう、一致箇所は下線だけで示す */
+.search-result mark {
+  background: transparent;
+  color: inherit;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.search-empty {
+  padding: 8px 6px;
+  font-size: 13px;
+  color: #888;
 }
 
 /* ファイルをドラッグしている間、ドロップできる範囲を示す */

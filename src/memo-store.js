@@ -103,6 +103,30 @@ export function removeMemo(memos, id) {
 }
 
 /**
+ * 全メモ検索の結果に出す、一致箇所の前後を切り出したスニペット
+ * @param {string} content
+ * @param {string} term
+ * @param {number} [radius] 一致箇所の前後に残す文字数
+ * @returns {{ before: string, match: string, after: string } | null}
+ */
+export function snippetFor(content, term, radius = 30) {
+  if (term === '') return null;
+  const index = content.toLowerCase().indexOf(term.toLowerCase());
+  if (index === -1) return null;
+  const start = Math.max(0, index - radius);
+  const end = Math.min(content.length, index + term.length + radius);
+  // 改行をそのまま出すと行が崩れるので、空白1つにまとめる
+  const collapse = (/** @type {string} */ text) => text.replace(/\s+/g, ' ');
+  return {
+    before: (start > 0 ? '… ' : '') + collapse(content.slice(start, index)),
+    match: collapse(content.slice(index, index + term.length)),
+    after:
+      collapse(content.slice(index + term.length, end)) +
+      (end < content.length ? ' …' : ''),
+  };
+}
+
+/**
  * @param {Memo[]} memos
  * @param {string} term
  * @returns {Memo[]}

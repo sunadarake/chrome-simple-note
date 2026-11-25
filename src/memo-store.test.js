@@ -5,6 +5,7 @@ import {
   hasSavableContent,
   removeMemo,
   retitle,
+  snippetFor,
   titleFor,
   titleOf,
   updateContent,
@@ -157,6 +158,41 @@ describe('filterMemos', () => {
 
   it('該当がなければ空配列を返す', () => {
     expect(filterMemos(memos, 'zzz')).toEqual([]);
+  });
+});
+
+describe('snippetFor', () => {
+  it('一致箇所の前後を切り出す', () => {
+    expect(snippetFor('abcKEYdef', 'KEY')).toEqual({
+      before: 'abc',
+      match: 'KEY',
+      after: 'def',
+    });
+  });
+
+  it('前後を切り捨てたら省略記号を付ける', () => {
+    expect(snippetFor('abcdefKEYghijkl', 'KEY', 2)).toEqual({
+      before: '… ef',
+      match: 'KEY',
+      after: 'gh …',
+    });
+  });
+
+  it('大文字小文字を区別しない', () => {
+    expect(snippetFor('abcKEYdef', 'key').match).toBe('KEY');
+  });
+
+  it('改行や連続する空白は1つの空白にまとめる', () => {
+    expect(snippetFor('行1\n行2 KEY 行3', 'KEY')).toEqual({
+      before: '行1 行2 ',
+      match: 'KEY',
+      after: ' 行3',
+    });
+  });
+
+  it('一致しないときと空の検索語は null', () => {
+    expect(snippetFor('abc', 'zzz')).toBeNull();
+    expect(snippetFor('abc', '')).toBeNull();
   });
 });
 

@@ -7,6 +7,7 @@ export const SHORTCUTS = [
   { keys: 'Ctrl+O', description: '新しいメモを作成' },
   { keys: 'Ctrl+Shift+O', description: 'シークレットメモを作成' },
   { keys: 'Ctrl+F', description: '検索欄にフォーカス' },
+  { keys: 'Ctrl+Shift+F', description: '全メモを検索' },
   { keys: 'Ctrl+P', description: '検索欄にフォーカスしてメモを絞り込む' },
   { keys: 'Ctrl+J', description: '次のメモを開く' },
   { keys: 'Ctrl+K', description: '前のメモを開く' },
@@ -27,6 +28,7 @@ export const SHORTCUTS = [
  * @param {() => void} deps.newMemo
  * @param {() => void} deps.newSecretMemo
  * @param {() => void} deps.focusSearch
+ * @param {() => void} deps.openSearch 全メモ検索パネルを開く
  * @param {(direction: number) => void} deps.moveMemo
  * @param {() => void} deps.openSettings
  * @param {() => boolean} deps.escape 閉じるものがあったら true を返す
@@ -43,6 +45,7 @@ export function initShortcuts({
   newMemo,
   newSecretMemo,
   focusSearch,
+  openSearch,
   moveMemo,
   openSettings,
   escape,
@@ -88,6 +91,11 @@ export function initShortcuts({
       } else {
         newMemo();
       }
+      return;
+    }
+    if (withCtrl && name === 'f' && key.shiftKey) {
+      key.preventDefault();
+      openSearch();
       return;
     }
     if (withCtrl && (name === 'f' || name === 'p')) {

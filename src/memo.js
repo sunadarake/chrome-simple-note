@@ -7,6 +7,7 @@ import {
   hasSavableContent,
   removeMemo,
   retitle,
+  snippetFor,
   titleFor,
   updateContent,
 } from './memo-store.js';
@@ -62,6 +63,12 @@ export function initMemoApp({
   const helpBtn = $('.help-btn');
   const helpPanel = /** @type {HTMLElement} */ ($('.help-panel'));
   const helpCloseBtn = $('.help-close-btn');
+  const searchPanel = /** @type {HTMLElement} */ ($('.search-panel'));
+  const searchPanelInput = /** @type {HTMLInputElement} */ (
+    $('.search-panel-input')
+  );
+  const searchResults = /** @type {HTMLElement} */ ($('.search-results'));
+  const searchCloseBtn = $('.search-close-btn');
   const shortcutList = $('.shortcut-list');
   const helpVersion = /** @type {HTMLElement} */ ($('.help-version'));
   const exportBtn = $('.export-btn');
@@ -137,6 +144,51 @@ export function initMemoApp({
         loadMemo(memo.id);
       });
       memoList.appendChild(memoItem);
+    }
+  }
+
+  function renderSearchResults() {
+    searchResults.innerHTML = '';
+    const term = searchPanelInput.value.trim();
+    if (term === '') return;
+    const matches = filterMemos(memos, term);
+    if (matches.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'search-empty';
+      empty.textContent = '一致するメモがありません';
+      searchResults.appendChild(empty);
+      return;
+    }
+    for (const memo of matches) {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'search-result';
+      const title = document.createElement('span');
+      title.className = 'search-result-title';
+      if (memo.secret) {
+        const icon = document.createElement('span');
+        icon.className = 'secret-icon';
+        icon.innerHTML = SECRET_ICON;
+        title.append(icon);
+      }
+      title.append(memo.title || '無題のメモ');
+      const preview = document.createElement('span');
+      preview.className = 'search-result-preview';
+      const snippet = snippetFor(memo.content, term);
+      if (snippet) {
+        const match = document.createElement('mark');
+        match.textContent = snippet.match;
+        preview.append(snippet.before, match, snippet.after);
+      } else {
+        // タイトルだけが一致したときは、本文の1行目を出す
+        preview.textContent = memo.content.trim().split('\n')[0];
+      }
+      row.append(title, preview);
+      row.addEventListener('click', () => {
+        closePanels();
+        loadMemo(memo.id);
+      });
+      searchResults.appendChild(row);
     }
   }
 
@@ -395,7 +447,8 @@ export function initMemoApp({
 
   // 設定・ヘルプを開いている間は、メモのタイトル行とエディタを隠す
   function syncMainVisibility() {
-    const panelOpen = !settingsPanel.hidden || !helpPanel.hidden;
+    const panelOpen =
+      !settingsPanel.hidden || !helpPanel.hidden || !searchPanel.hidden;
     mainContent.classList.toggle('panel-open', panelOpen);
     mainHeader.hidden = panelOpen;
     editor.hidden = panelOpen;
@@ -411,6 +464,7 @@ export function initMemoApp({
     if (open) {
       helpPanel.hidden = true;
       helpBtn.setAttribute('aria-expanded', 'false');
+      searchPanel.hidden = true;
     }
     syncMainVisibility();
   }
@@ -422,14 +476,34 @@ export function initMemoApp({
     if (open) {
       settingsPanel.hidden = true;
       settingsBtn.setAttribute('aria-expanded', 'false');
+      searchPanel.hidden = true;
     }
     syncMainVisibility();
+  }
+
+  /** @param {boolean} open */
+  function setSearchOpen(open) {
+    searchPanel.hidden = !open;
+    if (open) {
+      setSettingsOpen(false);
+      setHelpOpen(false);
+    }
+    syncMainVisibility();
+  }
+
+  // 開くたびに前の検索語を消して、入力欄から始める
+  function openSearch() {
+    setSearchOpen(true);
+    searchPanelInput.value = '';
+    renderSearchResults();
+    searchPanelInput.focus();
   }
 
   // メモを開くときは、未保存の設定変更を捨ててパネルを閉じる
   function closePanels() {
     setSettingsOpen(false);
     setHelpOpen(false);
+    setSearchOpen(false);
   }
 
   function focusSearch() {
@@ -458,6 +532,11 @@ export function initMemoApp({
     }
     if (!helpPanel.hidden) {
       setHelpOpen(false);
+      contentInput.focus();
+      return true;
+    }
+    if (!searchPanel.hidden) {
+      setSearchOpen(false);
       contentInput.focus();
       return true;
     }
@@ -641,6 +720,8 @@ export function initMemoApp({
     setHelpOpen(helpPanel.hidden === true),
   );
   helpCloseBtn.addEventListener('click', () => setHelpOpen(false));
+  searchPanelInput.addEventListener('input', renderSearchResults);
+  searchCloseBtn.addEventListener('click', () => setSearchOpen(false));
   for (const input of [
     normalAutoSaveInput,
     normalAutoSaveDelayInput,
@@ -693,6 +774,7 @@ export function initMemoApp({
     newMemo: () => createNewMemo(false),
     newSecretMemo: () => createNewMemo(true),
     focusSearch,
+    openSearch,
     moveMemo,
     openSettings: () => setSettingsOpen(true),
     escape: handleEscape,

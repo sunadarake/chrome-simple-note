@@ -15,6 +15,7 @@ const setup = (overrides = {}) => {
     newMemo: vi.fn(),
     newSecretMemo: vi.fn(),
     focusSearch: vi.fn(),
+    openSearch: vi.fn(),
     moveMemo: vi.fn(),
     openSettings: vi.fn(),
     escape: vi.fn(() => false),
@@ -40,7 +41,7 @@ beforeEach(() => {
 });
 
 describe('shortcuts', () => {
-  it('ヘルプ向けの一覧に12個のキーを持つ', () => {
+  it('ヘルプ向けの一覧に13個のキーを持つ', () => {
     expect(SHORTCUTS.map((s) => s.keys)).toEqual([
       'Ctrl+C',
       'Ctrl+S',
@@ -49,6 +50,7 @@ describe('shortcuts', () => {
       'Ctrl+O',
       'Ctrl+Shift+O',
       'Ctrl+F',
+      'Ctrl+Shift+F',
       'Ctrl+P',
       'Ctrl+J',
       'Ctrl+K',
@@ -130,6 +132,14 @@ describe('shortcuts', () => {
     expect(focusSearch).toHaveBeenCalledTimes(2);
   });
 
+  it('Ctrl+Shift+F で全メモ検索を開く', () => {
+    const { root, openSearch, focusSearch } = setup();
+    const event = press(root, 'F', { ctrlKey: true, shiftKey: true });
+    expect(openSearch).toHaveBeenCalledOnce();
+    expect(focusSearch).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it('Ctrl+J は次、Ctrl+K は前のメモへ移動する', () => {
     const { root, moveMemo } = setup();
     expect(press(root, 'j', { ctrlKey: true }).defaultPrevented).toBe(true);
@@ -156,6 +166,7 @@ describe('shortcuts', () => {
       ['o', { ctrlKey: true }],
       ['O', { ctrlKey: true, shiftKey: true }],
       ['f', { ctrlKey: true }],
+      ['F', { ctrlKey: true, shiftKey: true }],
       ['p', { ctrlKey: true }],
       ['j', { ctrlKey: true }],
       ['k', { ctrlKey: true }],
@@ -172,6 +183,7 @@ describe('shortcuts', () => {
     expect(deps.newMemo).not.toHaveBeenCalled();
     expect(deps.newSecretMemo).not.toHaveBeenCalled();
     expect(deps.focusSearch).not.toHaveBeenCalled();
+    expect(deps.openSearch).not.toHaveBeenCalled();
     expect(deps.moveMemo).not.toHaveBeenCalled();
     expect(deps.openSettings).not.toHaveBeenCalled();
   });

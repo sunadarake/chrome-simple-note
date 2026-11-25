@@ -440,7 +440,7 @@ describe('ヘルプ', () => {
     expect(q('.editor').hidden).toBe(true);
   });
 
-  it('12個のショートカットとバージョンを表示する', () => {
+  it('13個のショートカットとバージョンを表示する', () => {
     start();
     q('.help-btn').click();
     expect(
@@ -455,6 +455,7 @@ describe('ヘルプ', () => {
       'Ctrl+O',
       'Ctrl+Shift+O',
       'Ctrl+F',
+      'Ctrl+Shift+F',
       'Ctrl+P',
       'Ctrl+J',
       'Ctrl+K',
@@ -500,6 +501,98 @@ describe('ヘルプ', () => {
     expect(pressKey('s', { ctrlKey: true }).defaultPrevented).toBe(false);
     expect(pressKey('Delete').defaultPrevented).toBe(false);
     expect(stored(storage)[0].content).toBe('a');
+  });
+});
+
+describe('全メモ検索', () => {
+  const openSearch = () => pressKey('F', { ctrlKey: true, shiftKey: true });
+  const typeSearch = (value) => {
+    q('.search-panel-input').value = value;
+    q('.search-panel-input').dispatchEvent(new Event('input'));
+  };
+  const results = () => [...document.querySelectorAll('.search-result')];
+
+  it('Ctrl+Shift+F でパネルを開き、入力欄にフォーカスする', () => {
+    start({ memos: [memo(1, 'a')] });
+    expect(q('.search-panel').hidden).toBe(true);
+    const event = openSearch();
+    expect(event.defaultPrevented).toBe(true);
+    expect(q('.search-panel').hidden).toBe(false);
+    expect(q('.editor').hidden).toBe(true);
+    expect(q('.main-header').hidden).toBe(true);
+    expect(document.activeElement).toBe(q('.search-panel-input'));
+  });
+
+  it('本文に一致したメモを、一致箇所のスニペット付きで表示する', () => {
+    start({ memos: [memo(2, 'banana'), memo(1, 'apple')] });
+    openSearch();
+    typeSearch('ban');
+    expect(results()).toHaveLength(1);
+    expect(results()[0].querySelector('.search-result-title').textContent).toBe(
+      'banana',
+    );
+    expect(results()[0].querySelector('mark').textContent).toBe('ban');
+  });
+
+  it('タイトルだけに一致したメモは本文の1行目を表示する', () => {
+    start({
+      memos: [{ ...memo(1, 'apple'), customTitle: 'バナナ', title: 'バナナ' }],
+    });
+    openSearch();
+    typeSearch('バナナ');
+    expect(results()).toHaveLength(1);
+    expect(
+      results()[0].querySelector('.search-result-preview').textContent,
+    ).toBe('apple');
+  });
+
+  it('シークレットメモも検索結果に含める', () => {
+    start({ memos: [memo(1, 'apple')] });
+    q('.secret-memo-btn').click();
+    typeContent('banana secret');
+    vi.advanceTimersByTime(1000);
+    openSearch();
+    typeSearch('banana');
+    expect(results()).toHaveLength(1);
+    expect(results()[0].querySelector('.secret-icon')).not.toBeNull();
+  });
+
+  it('一致がなければメッセージを出す', () => {
+    start({ memos: [memo(1, 'apple')] });
+    openSearch();
+    typeSearch('zzz');
+    expect(results()).toHaveLength(0);
+    expect(q('.search-empty').textContent).toBe('一致するメモがありません');
+  });
+
+  it('結果をクリックするとメモを開いてパネルを閉じる', () => {
+    start({ memos: [memo(2, 'banana'), memo(1, 'apple')] });
+    openSearch();
+    typeSearch('apple');
+    results()[0].click();
+    expect(q('.search-panel').hidden).toBe(true);
+    expect(q('.editor').hidden).toBe(false);
+    expect(q('.content-input').value).toBe('apple');
+  });
+
+  it('Esc で閉じて本文に戻る', () => {
+    start({ memos: [memo(1, 'a')] });
+    openSearch();
+    pressKey('Escape');
+    expect(q('.search-panel').hidden).toBe(true);
+    expect(document.activeElement).toBe(q('.content-input'));
+  });
+
+  it('設定パネルとは排他になる', () => {
+    start({ memos: [memo(1, 'a')] });
+    openSearch();
+    q('.settings-btn').click();
+    expect(q('.settings-panel').hidden).toBe(false);
+    expect(q('.search-panel').hidden).toBe(true);
+    pressKey('Escape');
+    openSearch();
+    expect(q('.search-panel').hidden).toBe(false);
+    expect(q('.settings-panel').hidden).toBe(true);
   });
 });
 
