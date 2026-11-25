@@ -886,6 +886,7 @@ describe('設定パネル', () => {
       confirmDelete: { normal: true, secret: true },
       fontSize: 20,
       titleLength: 50,
+      logDisplayMs: 500,
     });
     document.body.innerHTML = body;
     initMemoApp({
@@ -908,6 +909,7 @@ describe('設定パネル', () => {
       confirmDelete: { normal: false, secret: false },
       fontSize: 20,
       titleLength: 10,
+      logDisplayMs: 500,
     };
 
     it('確認でキャンセルしたら設定を変えない', () => {
@@ -929,8 +931,44 @@ describe('設定パネル', () => {
       expect(settingsOf(storage)).toEqual(DEFAULT_SETTINGS);
       expect(q('.font-size-input').value).toBe('16');
       expect(q('.title-length-input').value).toBe('50');
+      expect(q('.log-display-input').value).toBe('0.5');
       expect(q('.normal-confirm-delete-input').checked).toBe(true);
       expect(q('.container').dataset.theme).toBeUndefined();
+    });
+  });
+
+  describe('ログの表示時間', () => {
+    const logShown = () => q('.log-message').classList.contains('show');
+
+    it('0.3秒にすると300msで消える。保存ボタンまで localStorage に書かない', () => {
+      const storage = start();
+      change('.log-display-input', '0.3');
+      expect(settingsOf(storage).logDisplayMs).toBeUndefined();
+      q('.copy-btn').click();
+      expect(logShown()).toBe(true);
+      vi.advanceTimersByTime(299);
+      expect(logShown()).toBe(true);
+      vi.advanceTimersByTime(1);
+      expect(logShown()).toBe(false);
+      q('.save-settings-btn').click();
+      expect(settingsOf(storage).logDisplayMs).toBe(300);
+    });
+
+    it('0 のときは表示しない', () => {
+      start();
+      change('.log-display-input', '0');
+      q('.copy-btn').click();
+      expect(logShown()).toBe(false);
+    });
+
+    it('空欄は既定、範囲外は 0〜5 秒に丸めて入力欄にも戻す', () => {
+      start();
+      change('.log-display-input', '9');
+      expect(q('.log-display-input').value).toBe('5');
+      change('.log-display-input', '-2');
+      expect(q('.log-display-input').value).toBe('0');
+      change('.log-display-input', '');
+      expect(q('.log-display-input').value).toBe('0.5');
     });
   });
 

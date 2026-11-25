@@ -3,6 +3,7 @@ const KEY = 'settings';
 export const AUTO_SAVE_DELAY_RANGE = { min: 500, max: 5000 };
 export const FONT_SIZE_RANGE = { min: 12, max: 24 };
 export const TITLE_LENGTH_RANGE = { min: 10, max: 100 };
+export const LOG_DISPLAY_RANGE = { min: 0, max: 5000 };
 
 /**
  * @typedef {{ normal: boolean, secret: boolean }} PerKindBoolean
@@ -13,6 +14,7 @@ export const TITLE_LENGTH_RANGE = { min: 10, max: 100 };
  * @property {PerKindBoolean} confirmDelete
  * @property {number} fontSize
  * @property {number} titleLength タイトルにする本文の先頭の文字数
+ * @property {number} logDisplayMs ログの表示時間。0 なら表示しない
  */
 
 /** @type {Settings} */
@@ -22,6 +24,7 @@ export const DEFAULT_SETTINGS = {
   confirmDelete: { normal: true, secret: true },
   fontSize: 16,
   titleLength: 50,
+  logDisplayMs: 500,
 };
 
 /**
@@ -118,6 +121,11 @@ export function loadSettings(storage) {
       saved.titleLength,
       TITLE_LENGTH_RANGE,
       DEFAULT_SETTINGS.titleLength,
+    ),
+    logDisplayMs: clampNumber(
+      saved.logDisplayMs,
+      LOG_DISPLAY_RANGE,
+      DEFAULT_SETTINGS.logDisplayMs,
     ),
   };
 }

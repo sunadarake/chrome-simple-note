@@ -25,6 +25,7 @@ describe('settings', () => {
       confirmDelete: { normal: true, secret: false },
       fontSize: 20,
       titleLength: 50,
+      logDisplayMs: 1500,
     };
     saveSettings(storage, settings);
     expect(loadSettings(storage)).toEqual(settings);
@@ -43,9 +44,9 @@ describe('settings', () => {
   });
 
   it('旧形式の theme は無視して既定値にする', () => {
-    expect(loadSettings(fakeStorage(JSON.stringify({ theme: 'dark' })))).toEqual(
-      DEFAULT_SETTINGS,
-    );
+    expect(
+      loadSettings(fakeStorage(JSON.stringify({ theme: 'dark' }))),
+    ).toEqual(DEFAULT_SETTINGS);
   });
 
   it('範囲外の数値は範囲内に丸める', () => {
@@ -90,6 +91,17 @@ describe('settings', () => {
     expect(loaded.autoSave).toEqual({ normal: true, secret: false });
     expect(loaded.autoSaveDelayMs).toEqual({ normal: 1000, secret: 3000 });
     expect(loaded.confirmDelete).toEqual({ normal: true, secret: false });
+  });
+
+  it('ログの表示時間は既定 500ms で、0〜5000 に丸める', () => {
+    const load = (logDisplayMs) =>
+      loadSettings(fakeStorage(JSON.stringify({ logDisplayMs }))).logDisplayMs;
+    expect(loadSettings(fakeStorage()).logDisplayMs).toBe(500);
+    expect(load(0)).toBe(0);
+    expect(load(5000)).toBe(5000);
+    expect(load(-1)).toBe(0);
+    expect(load(9999)).toBe(5000);
+    expect(load('1000')).toBe(500);
   });
 
   it('タイトルの文字数は 10〜100 に丸める', () => {

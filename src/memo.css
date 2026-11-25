@@ -470,7 +470,8 @@ body {
 .delete-all-btn,
 .save-settings-btn,
 .reset-settings-btn,
-.settings-panel select {
+.settings-panel select,
+.settings-panel input[type='number'] {
   padding: 6px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -479,6 +480,11 @@ body {
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s ease;
+}
+
+.settings-panel input[type='number'] {
+  width: 60px;
+  cursor: text;
 }
 
 .settings-close-btn:hover,

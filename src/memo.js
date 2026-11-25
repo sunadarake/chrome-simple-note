@@ -11,11 +11,15 @@ import {
   titleFor,
   updateContent,
 } from './memo-store.js';
-import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settings.js';
+import {
+  DEFAULT_SETTINGS,
+  LOG_DISPLAY_RANGE,
+  loadSettings,
+  saveSettings,
+} from './settings.js';
 import { SHORTCUTS, initShortcuts } from './shortcuts.js';
 import { loadMemos, saveMemos } from './storage.js';
 
-const LOG_DISPLAY_MS = 3000;
 const UNDO_LIMIT = 100;
 const SECRET_ICON = '<svg aria-hidden="true"><use href="#ghost" /></svg>';
 
@@ -100,6 +104,9 @@ export function initMemoApp({
   );
   const titleLengthInput = /** @type {HTMLSelectElement} */ (
     $('.title-length-input')
+  );
+  const logDisplayInput = /** @type {HTMLInputElement} */ (
+    $('.log-display-input')
   );
 
   let memos = loadMemos(storage, sessionStorage);
@@ -263,12 +270,16 @@ export function initMemoApp({
    */
   function showLogMessage(message, kind) {
     clearTimeout(logTimer);
+    if (settings.logDisplayMs === 0) {
+      logMessage.classList.remove('show');
+      return;
+    }
     logMessage.textContent = message;
     logMessage.dataset.kind = kind ?? '';
     logMessage.classList.add('show');
     logTimer = setTimeout(() => {
       logMessage.classList.remove('show');
-    }, LOG_DISPLAY_MS);
+    }, settings.logDisplayMs);
   }
 
   /** @param {boolean} secret */
@@ -608,6 +619,7 @@ export function initMemoApp({
     secretConfirmDeleteInput.checked = settings.confirmDelete.secret;
     fontSizeInput.value = String(settings.fontSize);
     titleLengthInput.value = String(settings.titleLength);
+    logDisplayInput.value = String(settings.logDisplayMs / 1000);
     applySettings();
   }
 
@@ -629,6 +641,15 @@ export function initMemoApp({
     settings.confirmDelete.secret = secretConfirmDeleteInput.checked;
     settings.fontSize = Number(fontSizeInput.value);
     settings.titleLength = Number(titleLengthInput.value);
+    // 空欄・数値以外は既定値、範囲外は範囲内に丸めて、入力欄にも戻す
+    const seconds = Number.parseFloat(logDisplayInput.value);
+    settings.logDisplayMs = Number.isNaN(seconds)
+      ? DEFAULT_SETTINGS.logDisplayMs
+      : Math.min(
+          LOG_DISPLAY_RANGE.max,
+          Math.max(LOG_DISPLAY_RANGE.min, Math.round(seconds * 1000)),
+        );
+    logDisplayInput.value = String(settings.logDisplayMs / 1000);
     cancelAutoSaveIfOff();
     applySettings();
     retitleAll();
@@ -648,6 +669,7 @@ export function initMemoApp({
     settings.confirmDelete = { ...DEFAULT_SETTINGS.confirmDelete };
     settings.fontSize = DEFAULT_SETTINGS.fontSize;
     settings.titleLength = DEFAULT_SETTINGS.titleLength;
+    settings.logDisplayMs = DEFAULT_SETTINGS.logDisplayMs;
     cancelAutoSaveIfOff();
     showSettings();
     retitleAll();
@@ -753,6 +775,7 @@ export function initMemoApp({
     secretConfirmDeleteInput,
     fontSizeInput,
     titleLengthInput,
+    logDisplayInput,
   ]) {
     input.addEventListener('change', changeSettings);
   }
