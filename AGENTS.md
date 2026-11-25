@@ -8,15 +8,15 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - 実行環境: Chrome拡張機能（Manifest V3）
 - テスト: Vitest（jsdom）
 - 静的解析・整形: ESLint、Prettier
-- パッケージ管理: npm
+- パッケージ管理: pnpm
 
 ## コマンド
-- セットアップ: `npm install`
-- テスト: `npm test`
-- lint: `npm run lint`
-- 型チェック: `npm run typecheck`
-- 出力を簡潔にする確認: `npm run check:quiet`（テスト・lint・型チェックを順に実行し、成功は `ok:` の1行、失敗は全出力。個別は `test:quiet` / `lint:quiet` / `typecheck:quiet`。実体は `quiet.sh`）
-- 整形: `npm run format`（確認のみは `npx prettier --check .`）
+- セットアップ: `pnpm install`
+- テスト: `pnpm test`
+- lint: `pnpm run lint`
+- 型チェック: `pnpm run typecheck`
+- 出力を簡潔にする確認: `pnpm run check:quiet`（テスト・lint・型チェックを順に実行し、成功は `ok:` の1行、失敗は全出力。個別は `test:quiet` / `lint:quiet` / `typecheck:quiet`。実体は `quiet.sh`）
+- 整形: `pnpm run format`（確認のみは `pnpm exec prettier --check .`）
 - ビルド: なし
 - リリース: `./build_for_test.sh`（動作確認用に `release/` へ zip を作る）、`./publish.sh`（zip を作って GitHub Release に公開する）
 - 動作確認: `chrome://extensions` でデベロッパーモードを有効にし、このディレクトリを「パッケージ化されていない拡張機能を読み込む」で読み込む
@@ -69,7 +69,7 @@ Chrome拡張機能（Manifest V3）のシンプルなメモ帳。
 - Ctrl+Z / Ctrl+Shift+Z のアンドゥ・リドゥは本文だけを対象にした独自の多段履歴（上限100件）。入力のたびに直前の本文を積み、入力するとリドゥ履歴を消し、メモを切り替えると両方を空にする。手動タイトルは対象外。タイトル編集中の Ctrl+S は、保存ボタンと同じくタイトルを確定してから保存する。Delete は入力中でもメモを削除する（削除確認の設定に従う）
 - `manifest.json` の `permissions` は `tabs` だけ。既存のメモ画面タブを `chrome.tabs.query({ url })` で探すために使う。使っていない権限があると Chrome ウェブストアの審査で不承認になるため、本当に必要になった権限だけを足す（`tabs` は「閲覧履歴の読み取り」の警告が出る）
 - `manifest.json` の `key` は拡張機能IDを固定するための公開鍵。変更・削除するとIDが変わる
-- バージョンは `manifest.json` の `version` で決まる。リリース前に手で更新する（zip 名とタグ `v<version>` に使われる）。`package.json` と `package-lock.json` の先頭2か所の `version` も同じ値にそろえる
+- バージョンは `manifest.json` の `version` で決まる。リリース前に手で更新する（zip 名とタグ `v<version>` に使われる）。`package.json` の `version` も同じ値にそろえる
 - `release-notes.md` の「概要」は 2〜3 行で簡潔に書く。機能を追加しても行を増やさず、まとめ直す
 - `publish.sh` は zip の作成（ビルド）も自分で行う（`build_for_test.sh` は呼ばない）。未コミットの変更・未 push のコミット・同じタグの Release があると止まる。公開に成功したあと、古い Release とタグを一覧で見せて自動で削除する（確認はしない。最新の1つだけ残る）
 
