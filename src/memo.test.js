@@ -289,25 +289,122 @@ describe('キーボードショートカット', () => {
     });
   });
 
-  it('Ctrl+U で本文を複数回前の状態に戻す', () => {
+  it('Ctrl+Z で本文を複数回前の状態に戻す', () => {
     start({ memos: [memo(1, 'a')] });
     typeContent('ab');
     typeContent('abc');
-    pressKey('u', { ctrlKey: true });
+    pressKey('z', { ctrlKey: true });
     expect(q('.content-input').value).toBe('ab');
-    pressKey('u', { ctrlKey: true });
+    pressKey('z', { ctrlKey: true });
     expect(q('.content-input').value).toBe('a');
-    pressKey('u', { ctrlKey: true });
+    pressKey('z', { ctrlKey: true });
     expect(q('.content-input').value).toBe('a');
     expect(q('.log-message').textContent).toBe('これ以上元に戻せません');
+  });
+
+  it('Ctrl+Shift+Z でアンドゥした本文をやり直す', () => {
+    start({ memos: [memo(1, 'a')] });
+    typeContent('ab');
+    typeContent('abc');
+    pressKey('z', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('ab');
+    pressKey('Z', { ctrlKey: true, shiftKey: true });
+    expect(q('.content-input').value).toBe('abc');
+    pressKey('Z', { ctrlKey: true, shiftKey: true });
+    expect(q('.content-input').value).toBe('abc');
+    expect(q('.log-message').textContent).toBe('これ以上やり直せません');
+  });
+
+  it('アンドゥ後に本文を入力すると、リドゥはできない', () => {
+    start({ memos: [memo(1, 'a')] });
+    typeContent('ab');
+    typeContent('abc');
+    pressKey('z', { ctrlKey: true });
+    typeContent('abcd');
+    pressKey('Z', { ctrlKey: true, shiftKey: true });
+    expect(q('.content-input').value).toBe('abcd');
+    expect(q('.log-message').textContent).toBe('これ以上やり直せません');
   });
 
   it('メモを切り替えるとアンドゥ履歴を空にする', () => {
     start({ memos: [memo(2, 'b'), memo(1, 'a')] });
     typeContent('b2');
     items()[1].click();
-    pressKey('u', { ctrlKey: true });
+    pressKey('z', { ctrlKey: true });
     expect(q('.content-input').value).toBe('a');
+  });
+
+  it('Ctrl+F と Ctrl+P で検索欄にフォーカスする', () => {
+    start({ memos: [memo(1, 'a')] });
+    const event = pressKey('f', { ctrlKey: true });
+    expect(event.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(q('.search-input'));
+    q('.content-input').focus();
+    pressKey('p', { ctrlKey: true });
+    expect(document.activeElement).toBe(q('.search-input'));
+  });
+
+  it('Ctrl+J / Ctrl+K で前後のメモを開く', () => {
+    start({ memos: [memo(2, 'first'), memo(1, 'second')] });
+    pressKey('j', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('second');
+    pressKey('k', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('first');
+  });
+
+  it('Ctrl+J / Ctrl+K は端で止まる', () => {
+    start({ memos: [memo(2, 'first'), memo(1, 'second')] });
+    pressKey('k', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('first');
+    pressKey('j', { ctrlKey: true });
+    pressKey('j', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('second');
+  });
+
+  it('Ctrl+J / Ctrl+K は絞り込んだ一覧の中を移動する', () => {
+    start({
+      memos: [memo(3, 'banana'), memo(2, 'apple'), memo(1, 'band')],
+    });
+    q('.search-input').value = 'ban';
+    q('.search-input').dispatchEvent(new Event('input'));
+    pressKey('j', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('band');
+    pressKey('j', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('band');
+    pressKey('k', { ctrlKey: true });
+    expect(q('.content-input').value).toBe('banana');
+  });
+
+  it('Ctrl+, で設定パネルを開く', () => {
+    start({ memos: [memo(1, 'a')] });
+    const event = pressKey(',', { ctrlKey: true });
+    expect(event.defaultPrevented).toBe(true);
+    expect(q('.settings-panel').hidden).toBe(false);
+    expect(q('.editor').hidden).toBe(true);
+  });
+
+  it('Esc で設定パネルを閉じて本文に戻る', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.settings-btn').click();
+    pressKey('Escape');
+    expect(q('.settings-panel').hidden).toBe(true);
+    expect(q('.editor').hidden).toBe(false);
+    expect(document.activeElement).toBe(q('.content-input'));
+  });
+
+  it('Esc でヘルプを閉じて本文に戻る', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.help-btn').click();
+    pressKey('Escape');
+    expect(q('.help-panel').hidden).toBe(true);
+    expect(document.activeElement).toBe(q('.content-input'));
+  });
+
+  it('Esc で検索欄から本文に戻る', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.search-input').focus();
+    pressKey('Escape');
+    expect(document.activeElement).toBe(q('.content-input'));
   });
 
   it('本文の入力中でも Delete でメモを削除する', () => {
@@ -343,7 +440,7 @@ describe('ヘルプ', () => {
     expect(q('.editor').hidden).toBe(true);
   });
 
-  it('6つのショートカットとバージョンを表示する', () => {
+  it('12個のショートカットとバージョンを表示する', () => {
     start();
     q('.help-btn').click();
     expect(
@@ -353,9 +450,15 @@ describe('ヘルプ', () => {
     ).toEqual([
       'Ctrl+C',
       'Ctrl+S',
-      'Ctrl+U',
+      'Ctrl+Z',
+      'Ctrl+Shift+Z',
       'Ctrl+O',
       'Ctrl+Shift+O',
+      'Ctrl+F',
+      'Ctrl+P',
+      'Ctrl+J',
+      'Ctrl+K',
+      'Ctrl+,',
       'Delete',
     ]);
     expect(q('.help-version').textContent).toBe('v1.2.3');
@@ -1247,6 +1350,7 @@ describe('手動タイトル', () => {
     const storage = start({ memos: [memo(1, '本文')] });
     edit('手動', 'Escape');
     expect(q('.title-display').textContent).toBe('本文');
+    expect(document.activeElement).toBe(q('.content-input'));
     vi.advanceTimersByTime(1000);
     expect(stored(storage)[0].customTitle).toBeUndefined();
   });

@@ -10,9 +10,14 @@ const setup = (overrides = {}) => {
     copy: vi.fn(),
     save: vi.fn(),
     undo: vi.fn(),
+    redo: vi.fn(),
     remove: vi.fn(),
     newMemo: vi.fn(),
     newSecretMemo: vi.fn(),
+    focusSearch: vi.fn(),
+    moveMemo: vi.fn(),
+    openSettings: vi.fn(),
+    escape: vi.fn(() => false),
     ...overrides,
   };
   initShortcuts({ root, ...deps });
@@ -35,13 +40,19 @@ beforeEach(() => {
 });
 
 describe('shortcuts', () => {
-  it('ヘルプ向けの一覧に6つのキーを持つ', () => {
+  it('ヘルプ向けの一覧に12個のキーを持つ', () => {
     expect(SHORTCUTS.map((s) => s.keys)).toEqual([
       'Ctrl+C',
       'Ctrl+S',
-      'Ctrl+U',
+      'Ctrl+Z',
+      'Ctrl+Shift+Z',
       'Ctrl+O',
       'Ctrl+Shift+O',
+      'Ctrl+F',
+      'Ctrl+P',
+      'Ctrl+J',
+      'Ctrl+K',
+      'Ctrl+,',
       'Delete',
     ]);
   });
@@ -67,11 +78,26 @@ describe('shortcuts', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
-  it('Ctrl+U でアンドゥし、ブラウザのソース表示を止める', () => {
+  it('Ctrl+Z でアンドゥし、ブラウザの既定動作を止める', () => {
     const { root, undo } = setup();
-    const event = press(root, 'u', { ctrlKey: true });
+    const event = press(root, 'z', { ctrlKey: true });
     expect(undo).toHaveBeenCalledOnce();
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('Ctrl+Shift+Z でリドゥする', () => {
+    const { root, redo, undo } = setup();
+    const event = press(root, 'Z', { ctrlKey: true, shiftKey: true });
+    expect(redo).toHaveBeenCalledOnce();
+    expect(undo).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('Ctrl+U はアンドゥに使わない', () => {
+    const { root, undo } = setup();
+    const event = press(root, 'u', { ctrlKey: true });
+    expect(undo).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('Delete で削除する', () => {
@@ -97,40 +123,90 @@ describe('shortcuts', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
-  it('エディタが表示されていないときは何もしない', () => {
-    const { root, copy, save, undo, remove, newMemo, newSecretMemo } = setup({
-      isActive: () => false,
-    });
+  it('Ctrl+F と Ctrl+P で検索欄にフォーカスする', () => {
+    const { root, focusSearch } = setup();
+    expect(press(root, 'f', { ctrlKey: true }).defaultPrevented).toBe(true);
+    expect(press(root, 'p', { ctrlKey: true }).defaultPrevented).toBe(true);
+    expect(focusSearch).toHaveBeenCalledTimes(2);
+  });
+
+  it('Ctrl+J は次、Ctrl+K は前のメモへ移動する', () => {
+    const { root, moveMemo } = setup();
+    expect(press(root, 'j', { ctrlKey: true }).defaultPrevented).toBe(true);
+    expect(moveMemo).toHaveBeenLastCalledWith(1);
+    expect(press(root, 'k', { ctrlKey: true }).defaultPrevented).toBe(true);
+    expect(moveMemo).toHaveBeenLastCalledWith(-1);
+  });
+
+  it('Ctrl+, で設定を開く', () => {
+    const { root, openSettings } = setup();
+    const event = press(root, ',', { ctrlKey: true });
+    expect(openSettings).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('エディタが表示されていないときは Esc 以外を無視する', () => {
+    const deps = setup({ isActive: () => false });
+    const { root } = deps;
     for (const [key, init] of [
       ['c', { ctrlKey: true }],
       ['s', { ctrlKey: true }],
-      ['u', { ctrlKey: true }],
+      ['z', { ctrlKey: true }],
+      ['Z', { ctrlKey: true, shiftKey: true }],
       ['o', { ctrlKey: true }],
       ['O', { ctrlKey: true, shiftKey: true }],
+      ['f', { ctrlKey: true }],
+      ['p', { ctrlKey: true }],
+      ['j', { ctrlKey: true }],
+      ['k', { ctrlKey: true }],
+      [',', { ctrlKey: true }],
       ['Delete', {}],
     ]) {
       expect(press(root, key, init).defaultPrevented).toBe(false);
     }
-    expect(copy).not.toHaveBeenCalled();
-    expect(save).not.toHaveBeenCalled();
-    expect(undo).not.toHaveBeenCalled();
-    expect(remove).not.toHaveBeenCalled();
-    expect(newMemo).not.toHaveBeenCalled();
-    expect(newSecretMemo).not.toHaveBeenCalled();
+    expect(deps.copy).not.toHaveBeenCalled();
+    expect(deps.save).not.toHaveBeenCalled();
+    expect(deps.undo).not.toHaveBeenCalled();
+    expect(deps.redo).not.toHaveBeenCalled();
+    expect(deps.remove).not.toHaveBeenCalled();
+    expect(deps.newMemo).not.toHaveBeenCalled();
+    expect(deps.newSecretMemo).not.toHaveBeenCalled();
+    expect(deps.focusSearch).not.toHaveBeenCalled();
+    expect(deps.moveMemo).not.toHaveBeenCalled();
+    expect(deps.openSettings).not.toHaveBeenCalled();
+  });
+
+  it('エディタが隠れていても Esc は閉じる処理を呼ぶ', () => {
+    const escape = vi.fn(() => true);
+    const { root } = setup({ isActive: () => false, escape });
+    const event = press(root, 'Escape');
+    expect(escape).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('閉じるものがない Esc は何もしない', () => {
+    const { root, escape } = setup();
+    const event = press(root, 'Escape');
+    expect(escape).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('キーリピートと IME 変換中は無視する', () => {
-    const { root, save, remove } = setup();
+    const { root, save, remove, undo } = setup();
     press(root, 's', { ctrlKey: true, repeat: true });
+    press(root, 'z', { ctrlKey: true, isComposing: true });
     press(root, 'Delete', { isComposing: true });
     expect(save).not.toHaveBeenCalled();
+    expect(undo).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
   });
 
   it('Alt・Meta 付きのキーはショートカットにしない', () => {
-    const { root, save } = setup();
+    const { root, save, moveMemo } = setup();
     press(root, 's', { ctrlKey: true, altKey: true });
     press(root, 's', { metaKey: true });
+    press(root, 'j', { ctrlKey: true, altKey: true });
     expect(save).not.toHaveBeenCalled();
+    expect(moveMemo).not.toHaveBeenCalled();
   });
 });

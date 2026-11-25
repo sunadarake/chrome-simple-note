@@ -106,6 +106,8 @@ export function initMemoApp({
   let editingTitle = false;
   /** @type {string[]} */
   let undoHistory = [];
+  /** @type {string[]} */
+  let redoHistory = [];
   let undoValue = '';
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   let autoSaveTimer;
@@ -151,6 +153,7 @@ export function initMemoApp({
     lastContent = memo.content;
     lastCustomTitle = customTitle;
     undoHistory = [];
+    redoHistory = [];
     undoValue = memo.content;
     editingTitle = false;
     titleInput.hidden = true;
@@ -297,10 +300,11 @@ export function initMemoApp({
   }
 
   function handleContentInput() {
-    // 入力のたびに直前の本文を積む。ブラウザ標準の Ctrl+Z も input として積まれる
+    // 入力のたびに直前の本文を積む
     if (contentInput.value !== undoValue) {
       undoHistory.push(undoValue);
       if (undoHistory.length > UNDO_LIMIT) undoHistory.shift();
+      redoHistory = [];
       undoValue = contentInput.value;
     }
     updateHighlight();
@@ -314,8 +318,24 @@ export function initMemoApp({
       showLogMessage('これ以上元に戻せません');
       return;
     }
+    redoHistory.push(undoValue);
     undoValue = previous;
     contentInput.value = previous;
+    updateHighlight();
+    updateTitleDisplay();
+    scheduleAutoSave();
+  }
+
+  function redoContent() {
+    const next = redoHistory.pop();
+    if (next === undefined) {
+      showLogMessage('これ以上やり直せません');
+      return;
+    }
+    undoHistory.push(undoValue);
+    if (undoHistory.length > UNDO_LIMIT) undoHistory.shift();
+    undoValue = next;
+    contentInput.value = next;
     updateHighlight();
     updateTitleDisplay();
     scheduleAutoSave();
@@ -410,6 +430,47 @@ export function initMemoApp({
   function closePanels() {
     setSettingsOpen(false);
     setHelpOpen(false);
+  }
+
+  function focusSearch() {
+    searchInput.focus();
+    searchInput.select();
+  }
+
+  /** @param {number} direction */
+  function moveMemo(direction) {
+    // タイトル編集中に移動すると未確定の入力を失うので何もしない
+    if (editingTitle) return;
+    const visible = filterMemos(memos, searchInput.value);
+    const index = visible.findIndex((memo) => memo.id === currentId);
+    if (index === -1) return;
+    const next = index + direction;
+    if (next < 0 || next >= visible.length) return;
+    loadMemo(visible[next].id);
+  }
+
+  /** @returns {boolean} 閉じるものがあったら true */
+  function handleEscape() {
+    if (!settingsPanel.hidden) {
+      setSettingsOpen(false);
+      contentInput.focus();
+      return true;
+    }
+    if (!helpPanel.hidden) {
+      setHelpOpen(false);
+      contentInput.focus();
+      return true;
+    }
+    if (editingTitle) {
+      endTitleEdit(false);
+      contentInput.focus();
+      return true;
+    }
+    if (document.activeElement === searchInput) {
+      contentInput.focus();
+      return true;
+    }
+    return false;
   }
 
   function renderHelp() {
@@ -561,7 +622,10 @@ export function initMemoApp({
   titleInput.addEventListener('blur', () => endTitleEdit(true));
   titleInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') endTitleEdit(true);
-    if (event.key === 'Escape') endTitleEdit(false);
+    if (event.key === 'Escape') {
+      endTitleEdit(false);
+      contentInput.focus();
+    }
   });
   contentInput.addEventListener('scroll', () => {
     highlightLayer.scrollTop = contentInput.scrollTop;
@@ -624,9 +688,14 @@ export function initMemoApp({
     copy: copyContent,
     save: saveMemoWithTitle,
     undo: undoContent,
+    redo: redoContent,
     remove: deleteMemo,
     newMemo: () => createNewMemo(false),
     newSecretMemo: () => createNewMemo(true),
+    focusSearch,
+    moveMemo,
+    openSettings: () => setSettingsOpen(true),
+    escape: handleEscape,
   });
 
   renderHelp();
