@@ -34,6 +34,11 @@ const pressKey = (key, init = {}) => {
   q('.container').dispatchEvent(event);
   return event;
 };
+const beforeUnload = () => {
+  const event = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(event);
+  return event;
+};
 const memo = (id, content) => ({
   id,
   title: content.substring(0, 30),
@@ -143,6 +148,63 @@ describe('保存', () => {
     expect(q('.title-display').textContent).toBe('あ'.repeat(30));
     typeContent('');
     expect(q('.title-display').textContent).toBe('新しいメモ');
+  });
+});
+
+describe('タブを閉じるときの確認', () => {
+  it('未保存の変更があり削除確認がオンなら確認を出す', () => {
+    start({ memos: [memo(1, 'a')] });
+    typeContent('changed');
+    expect(beforeUnload().defaultPrevented).toBe(true);
+  });
+
+  it('保存済みなら確認を出さない', () => {
+    start({ memos: [memo(1, 'a')] });
+    expect(beforeUnload().defaultPrevented).toBe(false);
+  });
+
+  it('保存すると確認を出さない', () => {
+    start({ memos: [memo(1, 'a')] });
+    typeContent('changed');
+    q('.save-btn').click();
+    expect(beforeUnload().defaultPrevented).toBe(false);
+  });
+
+  it('削除確認がオフなら未保存でも出さない', () => {
+    start({
+      memos: [memo(1, 'a')],
+      settings: {
+        autoSave: { normal: false, secret: false },
+        confirmDelete: { normal: false, secret: false },
+      },
+    });
+    typeContent('changed');
+    expect(beforeUnload().defaultPrevented).toBe(false);
+  });
+
+  it('シークレットメモの削除確認設定に従う', () => {
+    start({
+      settings: {
+        autoSave: { normal: false, secret: false },
+        confirmDelete: { normal: true, secret: false },
+      },
+    });
+    q('.secret-memo-btn').click();
+    typeContent('secret');
+    expect(beforeUnload().defaultPrevented).toBe(false);
+  });
+
+  it('内容が空なら確認を出さない', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.new-memo-btn').click();
+    expect(beforeUnload().defaultPrevented).toBe(false);
+  });
+
+  it('タイトル編集中の入力も未保存の変更として扱う', () => {
+    start({ memos: [memo(1, 'a')] });
+    q('.title-display').click();
+    q('.title-input').value = '手動タイトル';
+    expect(beforeUnload().defaultPrevented).toBe(true);
   });
 });
 

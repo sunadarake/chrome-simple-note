@@ -423,6 +423,25 @@ export function initMemoApp({
     return memo?.secret ? 'secret' : 'normal';
   }
 
+  // タブを閉じる・リロードするときに、削除確認と同じ設定で未保存の離脱を確認する
+  /** @param {BeforeUnloadEvent} event */
+  function handleBeforeUnload(event) {
+    // 画面を作り直したテストで、古いリスナーが動かないようにする
+    if (!container.isConnected || currentId === null) return;
+    if (!settings.confirmDelete[currentKind()]) return;
+    // タイトル編集中は、確定前の入力も未保存の変更として扱う
+    const pendingTitle = editingTitle ? titleInput.value.trim() : customTitle;
+    if (
+      contentInput.value === lastContent &&
+      pendingTitle === lastCustomTitle
+    ) {
+      return;
+    }
+    if (!hasSavableContent(contentInput.value, pendingTitle)) return;
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
   function scheduleAutoSave() {
     clearTimeout(autoSaveTimer);
     const kind = currentKind();
@@ -805,6 +824,11 @@ export function initMemoApp({
     settingsPanel.classList.remove('drop-active');
     if (inPanel(event)) importFiles([...(dragEvent.dataTransfer?.files ?? [])]);
   });
+
+  // beforeunload は document には届かないので、window に登録する
+  if (root instanceof Document && root.defaultView) {
+    root.defaultView.addEventListener('beforeunload', handleBeforeUnload);
+  }
 
   initShortcuts({
     // 画面を開き直すテストでも古いリスナーが残らないよう、文書ではなくこの画面に登録する
